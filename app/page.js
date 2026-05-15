@@ -1,14 +1,50 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
   const [repoUrl, setRepoUrl] = useState('');
   const [instructions, setInstructions] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleAnalyze = () => {
-    // TODO: Implement analysis logic
-    console.log('Analyzing:', { repoUrl, instructions });
+  const handleAnalyze = async () => {
+    if (!repoUrl || !instructions) {
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Call the analyze API
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          githubUrl: repoUrl,
+          userIntent: instructions
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        // Store results in sessionStorage for the results page
+        sessionStorage.setItem('analysisResult', JSON.stringify(result.data));
+        router.push('/results');
+      } else {
+        // Handle error
+        alert(`Error: ${result.message || 'Failed to analyze code'}`);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('Analysis error:', error);
+      alert('An error occurred while analyzing. Please try again.');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -77,9 +113,20 @@ export default function Home() {
           {/* Analyze Button */}
           <button
             onClick={handleAnalyze}
-            className="w-full py-4 bg-accent text-white font-bold text-lg rounded-lg hover:bg-accent/90 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-accent/20"
+            disabled={isLoading || !repoUrl || !instructions}
+            className="w-full py-4 bg-accent text-white font-bold text-lg rounded-lg hover:bg-accent/90 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-accent/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-accent disabled:active:scale-100"
           >
-            ANALYZE WITH BOBWATCH
+            {isLoading ? (
+              <span className="flex items-center justify-center gap-3">
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Processing your code...
+              </span>
+            ) : (
+              'ANALYZE WITH BOBWATCH'
+            )}
           </button>
         </div>
       </section>

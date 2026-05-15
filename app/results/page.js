@@ -8,66 +8,62 @@ export default function Results() {
   const [score, setScore] = useState(0);
   const [animatedScore, setAnimatedScore] = useState(0);
   const [visibleCards, setVisibleCards] = useState([]);
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock data based on TRD structure
-  const mockData = {
-    score: 78,
-    risky: [
-      {
-        filename: 'src/auth/login.js',
-        explanation: 'Modified authentication logic without updating security tests. Potential bypass vulnerability introduced.'
-      },
-      {
-        filename: 'config/database.js',
-        explanation: 'Changed connection pooling settings that could cause memory leaks under high load.'
-      }
-    ],
-    collateral: [
-      {
-        filename: 'src/utils/helpers.js',
-        explanation: 'Updated helper function signature. May break dependent modules that weren\'t in the scope.'
-      },
-      {
-        filename: 'src/components/Header.js',
-        explanation: 'Modified shared component styling. Could affect other pages using this component.'
-      },
-      {
-        filename: 'package.json',
-        explanation: 'Updated dependency versions. Potential compatibility issues with existing code.'
-      }
-    ],
-    intended: [
-      {
-        filename: 'src/pages/dashboard.js',
-        explanation: 'Added new dashboard page as requested. Implements all specified features correctly.'
-      },
-      {
-        filename: 'src/api/analytics.js',
-        explanation: 'Created analytics endpoint as per requirements. Properly handles data aggregation.'
-      },
-      {
-        filename: 'src/styles/dashboard.css',
-        explanation: 'Added dashboard-specific styles. Follows project design system.'
-      },
-      {
-        filename: 'tests/dashboard.test.js',
-        explanation: 'Added comprehensive test coverage for new dashboard functionality.'
-      }
-    ]
-  };
-
-  // Animate score on mount
+  // Fetch data from sessionStorage or demo API
   useEffect(() => {
-    setScore(mockData.score);
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Check if we have stored analysis results
+        const storedData = sessionStorage.getItem('analysisResult');
+        
+        if (storedData) {
+          // Use stored data from real analysis
+          const parsedData = JSON.parse(storedData);
+          setData(parsedData);
+          setScore(parsedData.score);
+          // Clear the stored data
+          sessionStorage.removeItem('analysisResult');
+        } else {
+          // Fallback to demo API
+          const response = await fetch('/api/demo');
+          
+          if (!response.ok) {
+            throw new Error('Failed to fetch analysis data');
+          }
+          
+          const result = await response.json();
+          setData(result.data);
+          setScore(result.data.score);
+        }
+      } catch (err) {
+        setError(err.message);
+        console.error('Error fetching data:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Animate score when data is loaded
+  useEffect(() => {
+    if (!data) return;
+
     const duration = 2000;
     const steps = 60;
-    const increment = mockData.score / steps;
+    const increment = data.score / steps;
     let current = 0;
 
     const timer = setInterval(() => {
       current += increment;
-      if (current >= mockData.score) {
-        setAnimatedScore(mockData.score);
+      if (current >= data.score) {
+        setAnimatedScore(data.score);
         clearInterval(timer);
       } else {
         setAnimatedScore(Math.floor(current));
@@ -75,14 +71,16 @@ export default function Results() {
     }, duration / steps);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [data]);
 
-  // Stagger card animations
+  // Stagger card animations when data is loaded
   useEffect(() => {
+    if (!data) return;
+
     const allCards = [
-      ...mockData.risky.map((_, i) => `risky-${i}`),
-      ...mockData.collateral.map((_, i) => `collateral-${i}`),
-      ...mockData.intended.map((_, i) => `intended-${i}`)
+      ...data.risky.map((_, i) => `risky-${i}`),
+      ...data.collateral.map((_, i) => `collateral-${i}`),
+      ...data.intended.map((_, i) => `intended-${i}`)
     ];
 
     allCards.forEach((cardId, index) => {
@@ -90,11 +88,44 @@ export default function Results() {
         setVisibleCards(prev => [...prev, cardId]);
       }, index * 100);
     });
-  }, []);
+  }, [data]);
 
   const handleNewAnalysis = () => {
     router.push('/');
   };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-background text-text flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-accent mb-4"></div>
+          <p className="text-text/80 text-lg">Loading analysis results...</p>
+        </div>
+      </main>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <main className="min-h-screen bg-background text-text flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <p className="text-red-500 text-xl mb-4">⚠️ Error loading results</p>
+          <p className="text-text/60 mb-6">{error}</p>
+          <button
+            onClick={() => router.push('/')}
+            className="px-6 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-all"
+          >
+            Back to Home
+          </button>
+        </div>
+      </main>
+    );
+  }
+
+  // Show results when data is loaded
+  if (!data) return null;
 
   return (
     <main className="min-h-screen bg-background text-text">
@@ -162,12 +193,12 @@ export default function Results() {
               <span>🚨</span>
               <span>RISKY</span>
               <span className="text-sm font-normal text-text/60">
-                ({mockData.risky.length} files)
+                ({data.risky.length} files)
               </span>
             </h2>
             
             <div className="grid gap-4 md:grid-cols-2">
-              {mockData.risky.map((file, index) => (
+              {data.risky.map((file, index) => (
                 <div
                   key={index}
                   className={`bg-card rounded-lg p-6 border-2 border-red-500 transition-all duration-500 ${
@@ -198,12 +229,12 @@ export default function Results() {
               <span>⚠️</span>
               <span>COLLATERAL</span>
               <span className="text-sm font-normal text-text/60">
-                ({mockData.collateral.length} files)
+                ({data.collateral.length} files)
               </span>
             </h2>
             
             <div className="grid gap-4 md:grid-cols-2">
-              {mockData.collateral.map((file, index) => (
+              {data.collateral.map((file, index) => (
                 <div
                   key={index}
                   className={`bg-card rounded-lg p-6 border border-yellow-500/50 transition-all duration-500 ${
@@ -229,12 +260,12 @@ export default function Results() {
               <span>✅</span>
               <span>INTENDED</span>
               <span className="text-sm font-normal text-text/60">
-                ({mockData.intended.length} files)
+                ({data.intended.length} files)
               </span>
             </h2>
             
             <div className="grid gap-4 md:grid-cols-2">
-              {mockData.intended.map((file, index) => (
+              {data.intended.map((file, index) => (
                 <div
                   key={index}
                   className={`bg-card rounded-lg p-6 border border-green-500/50 transition-all duration-500 ${
