@@ -1,25 +1,275 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
 export default function Results() {
+  const router = useRouter();
+  const [score, setScore] = useState(0);
+  const [animatedScore, setAnimatedScore] = useState(0);
+  const [visibleCards, setVisibleCards] = useState([]);
+
+  // Mock data based on TRD structure
+  const mockData = {
+    score: 78,
+    risky: [
+      {
+        filename: 'src/auth/login.js',
+        explanation: 'Modified authentication logic without updating security tests. Potential bypass vulnerability introduced.'
+      },
+      {
+        filename: 'config/database.js',
+        explanation: 'Changed connection pooling settings that could cause memory leaks under high load.'
+      }
+    ],
+    collateral: [
+      {
+        filename: 'src/utils/helpers.js',
+        explanation: 'Updated helper function signature. May break dependent modules that weren\'t in the scope.'
+      },
+      {
+        filename: 'src/components/Header.js',
+        explanation: 'Modified shared component styling. Could affect other pages using this component.'
+      },
+      {
+        filename: 'package.json',
+        explanation: 'Updated dependency versions. Potential compatibility issues with existing code.'
+      }
+    ],
+    intended: [
+      {
+        filename: 'src/pages/dashboard.js',
+        explanation: 'Added new dashboard page as requested. Implements all specified features correctly.'
+      },
+      {
+        filename: 'src/api/analytics.js',
+        explanation: 'Created analytics endpoint as per requirements. Properly handles data aggregation.'
+      },
+      {
+        filename: 'src/styles/dashboard.css',
+        explanation: 'Added dashboard-specific styles. Follows project design system.'
+      },
+      {
+        filename: 'tests/dashboard.test.js',
+        explanation: 'Added comprehensive test coverage for new dashboard functionality.'
+      }
+    ]
+  };
+
+  // Animate score on mount
+  useEffect(() => {
+    setScore(mockData.score);
+    const duration = 2000;
+    const steps = 60;
+    const increment = mockData.score / steps;
+    let current = 0;
+
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= mockData.score) {
+        setAnimatedScore(mockData.score);
+        clearInterval(timer);
+      } else {
+        setAnimatedScore(Math.floor(current));
+      }
+    }, duration / steps);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Stagger card animations
+  useEffect(() => {
+    const allCards = [
+      ...mockData.risky.map((_, i) => `risky-${i}`),
+      ...mockData.collateral.map((_, i) => `collateral-${i}`),
+      ...mockData.intended.map((_, i) => `intended-${i}`)
+    ];
+
+    allCards.forEach((cardId, index) => {
+      setTimeout(() => {
+        setVisibleCards(prev => [...prev, cardId]);
+      }, index * 100);
+    });
+  }, []);
+
+  const handleNewAnalysis = () => {
+    router.push('/');
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center p-24">
-      <div className="z-10 max-w-5xl w-full">
-        <h1 className="text-4xl font-bold mb-8">Analysis Results</h1>
-        
-        <div className="bg-gray-900 rounded-lg p-6 mb-6">
-          <h2 className="text-2xl font-semibold mb-4">Code Analysis</h2>
-          <p className="text-gray-300">
-            Your analysis results will appear here.
-          </p>
+    <main className="min-h-screen bg-background text-text">
+      {/* Header */}
+      <header className="border-b border-border">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 rounded-full bg-accent"></div>
+              <span className="text-xl font-bold text-text">BobWatch</span>
+            </div>
+            
+            {/* New Analysis Button */}
+            <button 
+              onClick={handleNewAnalysis}
+              className="px-6 py-2 border-2 border-accent text-accent rounded-lg hover:bg-accent hover:text-white transition-all duration-200 font-medium"
+            >
+              New Analysis
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Score Section */}
+        <div className="mb-12">
+          <h1 className="text-3xl sm:text-4xl font-bold text-text mb-8 text-center">
+            Analysis Results
+          </h1>
+          
+          <div className="bg-card rounded-2xl p-8 border border-border">
+            <h2 className="text-xl font-semibold text-text mb-4 text-center">
+              Intent vs Reality Score
+            </h2>
+            
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <span className="text-5xl font-bold text-accent">
+                {animatedScore}%
+              </span>
+            </div>
+            
+            {/* Animated Progress Bar */}
+            <div className="w-full bg-background rounded-full h-4 overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-accent to-blue-400 transition-all duration-2000 ease-out"
+                style={{ width: `${animatedScore}%` }}
+              ></div>
+            </div>
+            
+            <p className="text-center text-text/60 mt-4 text-sm">
+              {score >= 80 ? 'Excellent alignment with your instructions' : 
+               score >= 60 ? 'Good alignment with some concerns' : 
+               'Significant deviations detected'}
+            </p>
+          </div>
         </div>
 
-        <div className="flex justify-center mt-8">
-          <a
-            href="/"
-            className="px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-          >
-            Back to Home
-          </a>
+        {/* File Cards Sections */}
+        <div className="space-y-12">
+          {/* RISKY Section */}
+          <section>
+            <h2 className="text-2xl font-bold text-red-500 mb-6 flex items-center gap-2">
+              <span>🚨</span>
+              <span>RISKY</span>
+              <span className="text-sm font-normal text-text/60">
+                ({mockData.risky.length} files)
+              </span>
+            </h2>
+            
+            <div className="grid gap-4 md:grid-cols-2">
+              {mockData.risky.map((file, index) => (
+                <div
+                  key={index}
+                  className={`bg-card rounded-lg p-6 border-2 border-red-500 transition-all duration-500 ${
+                    visibleCards.includes(`risky-${index}`) 
+                      ? 'opacity-100 translate-y-0' 
+                      : 'opacity-0 translate-y-4'
+                  } animate-pulse-glow`}
+                  style={{
+                    animation: visibleCards.includes(`risky-${index}`) 
+                      ? 'pulse-glow 2s ease-in-out infinite' 
+                      : 'none'
+                  }}
+                >
+                  <h3 className="font-mono text-sm text-red-400 mb-3 break-all">
+                    {file.filename}
+                  </h3>
+                  <p className="text-text/80 text-sm leading-relaxed">
+                    {file.explanation}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* COLLATERAL Section */}
+          <section>
+            <h2 className="text-2xl font-bold text-yellow-500 mb-6 flex items-center gap-2">
+              <span>⚠️</span>
+              <span>COLLATERAL</span>
+              <span className="text-sm font-normal text-text/60">
+                ({mockData.collateral.length} files)
+              </span>
+            </h2>
+            
+            <div className="grid gap-4 md:grid-cols-2">
+              {mockData.collateral.map((file, index) => (
+                <div
+                  key={index}
+                  className={`bg-card rounded-lg p-6 border border-yellow-500/50 transition-all duration-500 ${
+                    visibleCards.includes(`collateral-${index}`) 
+                      ? 'opacity-100 translate-y-0' 
+                      : 'opacity-0 translate-y-4'
+                  }`}
+                >
+                  <h3 className="font-mono text-sm text-yellow-400 mb-3 break-all">
+                    {file.filename}
+                  </h3>
+                  <p className="text-text/80 text-sm leading-relaxed">
+                    {file.explanation}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* INTENDED Section */}
+          <section>
+            <h2 className="text-2xl font-bold text-green-500 mb-6 flex items-center gap-2">
+              <span>✅</span>
+              <span>INTENDED</span>
+              <span className="text-sm font-normal text-text/60">
+                ({mockData.intended.length} files)
+              </span>
+            </h2>
+            
+            <div className="grid gap-4 md:grid-cols-2">
+              {mockData.intended.map((file, index) => (
+                <div
+                  key={index}
+                  className={`bg-card rounded-lg p-6 border border-green-500/50 transition-all duration-500 ${
+                    visibleCards.includes(`intended-${index}`) 
+                      ? 'opacity-100 translate-y-0' 
+                      : 'opacity-0 translate-y-4'
+                  }`}
+                >
+                  <h3 className="font-mono text-sm text-green-400 mb-3 break-all">
+                    {file.filename}
+                  </h3>
+                  <p className="text-text/80 text-sm leading-relaxed">
+                    {file.explanation}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
         </div>
       </div>
+
+      <style jsx>{`
+        @keyframes pulse-glow {
+          0%, 100% {
+            box-shadow: 0 0 5px rgba(239, 68, 68, 0.5),
+                        0 0 10px rgba(239, 68, 68, 0.3),
+                        0 0 15px rgba(239, 68, 68, 0.2);
+          }
+          50% {
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.8),
+                        0 0 20px rgba(239, 68, 68, 0.5),
+                        0 0 30px rgba(239, 68, 68, 0.3);
+          }
+        }
+      `}</style>
     </main>
   );
 }
