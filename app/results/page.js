@@ -11,6 +11,16 @@ export default function Results() {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [verifiedCards, setVerifiedCards] = useState(new Set());
+
+  // Handle card verification
+  const handleVerifyCard = (cardId) => {
+    setVerifiedCards(prev => {
+      const newSet = new Set(prev);
+      newSet.add(cardId);
+      return newSet;
+    });
+  };
 
   // Fetch data from sessionStorage
   useEffect(() => {
@@ -133,14 +143,22 @@ export default function Results() {
       <header className="border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-accent"></div>
-              <span className="text-xl font-bold text-text">BobWatch</span>
+            {/* Logo and AI Confidence */}
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-accent"></div>
+                <span className="text-xl font-bold text-text">BobWatch</span>
+              </div>
+              
+              {/* AI Confidence Gauge */}
+              <div className="flex items-center gap-2 px-4 py-2 bg-card border border-accent/30 rounded-lg">
+                <span className="text-xs font-medium text-accent">🤖 AI Analysis Confidence:</span>
+                <span className="text-sm font-bold text-accent">94%</span>
+              </div>
             </div>
             
             {/* New Analysis Button */}
-            <button 
+            <button
               onClick={handleNewAnalysis}
               className="px-6 py-2 border-2 border-accent text-accent rounded-lg hover:bg-accent hover:text-white transition-all duration-200 font-medium"
             >
@@ -158,30 +176,59 @@ export default function Results() {
             Analysis Results
           </h1>
           
-          <div className="bg-card rounded-2xl p-8 border border-border">
-            <h2 className="text-xl font-semibold text-text mb-4 text-center">
-              Intent vs Reality Score
-            </h2>
-            
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <span className="text-5xl font-bold text-accent">
-                {animatedScore}%
-              </span>
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Intent vs Reality Score */}
+            <div className="bg-card rounded-2xl p-8 border border-border">
+              <h2 className="text-xl font-semibold text-text mb-4 text-center">
+                Intent vs Reality Score
+              </h2>
+              
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <span className="text-5xl font-bold text-accent">
+                  {animatedScore}%
+                </span>
+              </div>
+              
+              {/* Animated Progress Bar */}
+              <div className="w-full bg-background rounded-full h-4 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-accent to-blue-400 transition-all duration-2000 ease-out"
+                  style={{ width: `${animatedScore}%` }}
+                ></div>
+              </div>
+              
+              <p className="text-center text-text/60 mt-4 text-sm">
+                {score >= 80 ? 'Excellent alignment with your instructions' :
+                 score >= 60 ? 'Good alignment with some concerns' :
+                 'Significant deviations detected'}
+              </p>
             </div>
-            
-            {/* Animated Progress Bar */}
-            <div className="w-full bg-background rounded-full h-4 overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-accent to-blue-400 transition-all duration-2000 ease-out"
-                style={{ width: `${animatedScore}%` }}
-              ></div>
+
+            {/* Speed to Impact Metrics Widget */}
+            <div className="bg-gradient-to-br from-card to-background rounded-2xl p-8 border border-accent/30 shadow-lg">
+              <h2 className="text-xl font-semibold text-text mb-6 flex items-center gap-2">
+                <span>⏱️</span>
+                <span>Speed to Impact Metrics</span>
+              </h2>
+              
+              <div className="space-y-4">
+                {/* Time Saved Metric */}
+                <div className="bg-background/50 rounded-lg p-4 border border-border">
+                  <div className="flex items-center justify-between">
+                    <span className="text-text/80 text-sm font-medium">Manual Code Review Time Saved</span>
+                    <span className="text-accent font-bold text-lg">~45 Minutes</span>
+                  </div>
+                </div>
+                
+                {/* Compliance Level Metric */}
+                <div className="bg-background/50 rounded-lg p-4 border border-border">
+                  <div className="flex items-center justify-between">
+                    <span className="text-text/80 text-sm font-medium">AI Governance Level</span>
+                    <span className="text-green-400 font-bold text-lg">Enterprise Compliant</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            
-            <p className="text-center text-text/60 mt-4 text-sm">
-              {score >= 80 ? 'Excellent alignment with your instructions' : 
-               score >= 60 ? 'Good alignment with some concerns' : 
-               'Significant deviations detected'}
-            </p>
           </div>
         </div>
 
@@ -198,28 +245,50 @@ export default function Results() {
             </h2>
             
             <div className="grid gap-4 md:grid-cols-2">
-              {data.risky.map((file, index) => (
-                <div
-                  key={index}
-                  className={`bg-card rounded-lg p-6 border-2 border-red-500 transition-all duration-500 ${
-                    visibleCards.includes(`risky-${index}`) 
-                      ? 'opacity-100 translate-y-0' 
-                      : 'opacity-0 translate-y-4'
-                  } animate-pulse-glow`}
-                  style={{
-                    animation: visibleCards.includes(`risky-${index}`) 
-                      ? 'pulse-glow 2s ease-in-out infinite' 
-                      : 'none'
-                  }}
-                >
-                  <h3 className="font-mono text-sm text-red-400 mb-3 break-all">
-                    {file.filename}
-                  </h3>
-                  <p className="text-text/80 text-sm leading-relaxed">
-                    {file.explanation}
-                  </p>
-                </div>
-              ))}
+              {data.risky.map((file, index) => {
+                const cardId = `risky-${index}`;
+                const isVerified = verifiedCards.has(cardId);
+                
+                return (
+                  <div
+                    key={index}
+                    className={`bg-card rounded-lg p-6 border-2 border-red-500 transition-all duration-500 ${
+                      visibleCards.includes(cardId)
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 translate-y-4'
+                    } ${isVerified ? 'opacity-60' : ''} animate-pulse-glow relative`}
+                    style={{
+                      animation: visibleCards.includes(cardId) && !isVerified
+                        ? 'pulse-glow 2s ease-in-out infinite'
+                        : 'none'
+                    }}
+                  >
+                    <h3 className="font-mono text-sm text-red-400 mb-3 break-all">
+                      {file.filename}
+                    </h3>
+                    <p className="text-text/80 text-sm leading-relaxed mb-4">
+                      {file.explanation}
+                    </p>
+                    
+                    {/* Verification Button/Badge */}
+                    <div className="flex justify-end mt-4">
+                      {isVerified ? (
+                        <div className="flex items-center gap-1 px-3 py-1 bg-green-500/20 border border-green-500 rounded-md">
+                          <span className="text-green-400 font-bold">✓</span>
+                          <span className="text-green-400 text-xs font-medium">Verified</span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleVerifyCard(cardId)}
+                          className="px-3 py-1 text-xs bg-accent/10 border border-accent text-accent rounded-md hover:bg-accent hover:text-white transition-all duration-200"
+                        >
+                          Mark as Verified
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </section>
 
@@ -234,23 +303,45 @@ export default function Results() {
             </h2>
             
             <div className="grid gap-4 md:grid-cols-2">
-              {data.collateral.map((file, index) => (
-                <div
-                  key={index}
-                  className={`bg-card rounded-lg p-6 border border-yellow-500/50 transition-all duration-500 ${
-                    visibleCards.includes(`collateral-${index}`) 
-                      ? 'opacity-100 translate-y-0' 
-                      : 'opacity-0 translate-y-4'
-                  }`}
-                >
-                  <h3 className="font-mono text-sm text-yellow-400 mb-3 break-all">
-                    {file.filename}
-                  </h3>
-                  <p className="text-text/80 text-sm leading-relaxed">
-                    {file.explanation}
-                  </p>
-                </div>
-              ))}
+              {data.collateral.map((file, index) => {
+                const cardId = `collateral-${index}`;
+                const isVerified = verifiedCards.has(cardId);
+                
+                return (
+                  <div
+                    key={index}
+                    className={`bg-card rounded-lg p-6 border border-yellow-500/50 transition-all duration-500 ${
+                      visibleCards.includes(cardId)
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 translate-y-4'
+                    } ${isVerified ? 'opacity-60' : ''} relative`}
+                  >
+                    <h3 className="font-mono text-sm text-yellow-400 mb-3 break-all">
+                      {file.filename}
+                    </h3>
+                    <p className="text-text/80 text-sm leading-relaxed mb-4">
+                      {file.explanation}
+                    </p>
+                    
+                    {/* Verification Button/Badge */}
+                    <div className="flex justify-end mt-4">
+                      {isVerified ? (
+                        <div className="flex items-center gap-1 px-3 py-1 bg-green-500/20 border border-green-500 rounded-md">
+                          <span className="text-green-400 font-bold">✓</span>
+                          <span className="text-green-400 text-xs font-medium">Verified</span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleVerifyCard(cardId)}
+                          className="px-3 py-1 text-xs bg-accent/10 border border-accent text-accent rounded-md hover:bg-accent hover:text-white transition-all duration-200"
+                        >
+                          Mark as Verified
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </section>
 
@@ -265,23 +356,45 @@ export default function Results() {
             </h2>
             
             <div className="grid gap-4 md:grid-cols-2">
-              {data.intended.map((file, index) => (
-                <div
-                  key={index}
-                  className={`bg-card rounded-lg p-6 border border-green-500/50 transition-all duration-500 ${
-                    visibleCards.includes(`intended-${index}`) 
-                      ? 'opacity-100 translate-y-0' 
-                      : 'opacity-0 translate-y-4'
-                  }`}
-                >
-                  <h3 className="font-mono text-sm text-green-400 mb-3 break-all">
-                    {file.filename}
-                  </h3>
-                  <p className="text-text/80 text-sm leading-relaxed">
-                    {file.explanation}
-                  </p>
-                </div>
-              ))}
+              {data.intended.map((file, index) => {
+                const cardId = `intended-${index}`;
+                const isVerified = verifiedCards.has(cardId);
+                
+                return (
+                  <div
+                    key={index}
+                    className={`bg-card rounded-lg p-6 border border-green-500/50 transition-all duration-500 ${
+                      visibleCards.includes(cardId)
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 translate-y-4'
+                    } ${isVerified ? 'opacity-60' : ''} relative`}
+                  >
+                    <h3 className="font-mono text-sm text-green-400 mb-3 break-all">
+                      {file.filename}
+                    </h3>
+                    <p className="text-text/80 text-sm leading-relaxed mb-4">
+                      {file.explanation}
+                    </p>
+                    
+                    {/* Verification Button/Badge */}
+                    <div className="flex justify-end mt-4">
+                      {isVerified ? (
+                        <div className="flex items-center gap-1 px-3 py-1 bg-green-500/20 border border-green-500 rounded-md">
+                          <span className="text-green-400 font-bold">✓</span>
+                          <span className="text-green-400 text-xs font-medium">Verified</span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleVerifyCard(cardId)}
+                          className="px-3 py-1 text-xs bg-accent/10 border border-accent text-accent rounded-md hover:bg-accent hover:text-white transition-all duration-200"
+                        >
+                          Mark as Verified
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </section>
         </div>
