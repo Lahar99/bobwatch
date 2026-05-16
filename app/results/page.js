@@ -12,7 +12,7 @@ export default function Results() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch data from sessionStorage or demo API
+  // Fetch data from sessionStorage
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -20,35 +20,41 @@ export default function Results() {
         
         // Check if we have stored analysis results
         const storedData = sessionStorage.getItem('analysisResult');
+        console.log('Results page - checking sessionStorage:', storedData ? 'Data found' : 'No data');
         
         if (storedData) {
           // Use stored data from real analysis
           const parsedData = JSON.parse(storedData);
+          console.log('Results page - parsed data:', {
+            score: parsedData.score,
+            riskyCount: parsedData.risky?.length || 0,
+            collateralCount: parsedData.collateral?.length || 0,
+            intendedCount: parsedData.intended?.length || 0
+          });
+          
           setData(parsedData);
           setScore(parsedData.score);
-          // Clear the stored data
-          sessionStorage.removeItem('analysisResult');
+          setIsLoading(false);
         } else {
-          // Fallback to demo API
-          const response = await fetch('/api/demo');
-          
-          if (!response.ok) {
-            throw new Error('Failed to fetch analysis data');
-          }
-          
-          const result = await response.json();
-          setData(result.data);
-          setScore(result.data.score);
+          // No data available - show error
+          console.log('Results page - no data in sessionStorage');
+          setError('No analysis data found. Please submit a new analysis from the homepage.');
+          setIsLoading(false);
         }
       } catch (err) {
-        setError(err.message);
+        setError('Failed to load analysis data: ' + err.message);
         console.error('Error fetching data:', err);
-      } finally {
         setIsLoading(false);
       }
     };
 
     fetchData();
+
+    // Cleanup: Clear sessionStorage when component unmounts
+    return () => {
+      console.log('Results page - cleaning up sessionStorage');
+      sessionStorage.removeItem('analysisResult');
+    };
   }, []);
 
   // Animate score when data is loaded
