@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+// PRESENTATION MODE: Set to true for hackathon demo (bypasses GitHub API)
+const PRESENTATION_MODE = true;
+
 // Helper function to parse GitHub PR URL
 function parsePRUrl(url) {
   const regex = /github\.com\/([^\/]+)\/([^\/]+)\/pull\/(\d+)/;
@@ -12,6 +15,124 @@ function parsePRUrl(url) {
     owner: match[1],
     repo: match[2],
     pullNumber: match[3]
+  };
+}
+
+// Helper function to generate presentation mode data
+function generatePresentationData(userIntent, prData) {
+  const { owner, repo, pullNumber } = prData;
+  
+  // Extract key intent keywords for contextual generation
+  const intentLower = userIntent.toLowerCase();
+  
+  // Determine primary intent category
+  let primaryFiles = [];
+  let riskyFiles = [];
+  let collateralFiles = [];
+  
+  // INTENDED FILES - Based on user intent
+  if (intentLower.includes('login') || intentLower.includes('auth')) {
+    primaryFiles.push(
+      {
+        filename: 'src/auth/login.js',
+        explanation: `Implemented login functionality as requested. Added form validation, session management, and secure password handling.`
+      },
+      {
+        filename: 'src/components/LoginForm.jsx',
+        explanation: `Created login form component with proper input validation and error handling as specified in requirements.`
+      },
+      {
+        filename: 'src/styles/auth.css',
+        explanation: `Added authentication page styling to match the design specifications provided.`
+      }
+    );
+  } else if (intentLower.includes('dashboard') || intentLower.includes('analytics')) {
+    primaryFiles.push(
+      {
+        filename: 'src/pages/dashboard.js',
+        explanation: `Created dashboard page with all requested features: data visualization, user metrics, and real-time updates.`
+      },
+      {
+        filename: 'src/api/analytics.js',
+        explanation: `Implemented analytics API endpoint to fetch and aggregate user data as specified.`
+      },
+      {
+        filename: 'src/components/Chart.jsx',
+        explanation: `Added chart component for data visualization using the requested library and configuration.`
+      }
+    );
+  } else if (intentLower.includes('api') || intentLower.includes('endpoint')) {
+    primaryFiles.push(
+      {
+        filename: 'src/api/routes.js',
+        explanation: `Created new API endpoints as requested with proper request validation and error handling.`
+      },
+      {
+        filename: 'src/middleware/validation.js',
+        explanation: `Added input validation middleware to ensure data integrity for the new endpoints.`
+      }
+    );
+  } else if (intentLower.includes('database') || intentLower.includes('model')) {
+    primaryFiles.push(
+      {
+        filename: 'src/models/User.js',
+        explanation: `Updated database model with the requested fields and relationships.`
+      },
+      {
+        filename: 'src/migrations/add_user_fields.js',
+        explanation: `Created migration script to safely update the database schema as specified.`
+      }
+    );
+  } else {
+    // Generic intent
+    primaryFiles.push(
+      {
+        filename: `src/features/${repo.toLowerCase()}.js`,
+        explanation: `Implemented the core functionality as described: "${userIntent}". All specified requirements have been addressed.`
+      },
+      {
+        filename: `src/components/${repo}Component.jsx`,
+        explanation: `Created component to handle the user interface for the requested feature with proper state management.`
+      },
+      {
+        filename: `tests/${repo}.test.js`,
+        explanation: `Added comprehensive test coverage for the new functionality to ensure reliability.`
+      }
+    );
+  }
+  
+  // RISKY FILES - Security concerns a Senior Auditor would flag
+  riskyFiles.push(
+    {
+      filename: 'src/config/database.js',
+      explanation: `Modified database connection pooling settings without updating timeout configurations. Could cause connection exhaustion under high load, leading to service degradation.`
+    },
+    {
+      filename: 'src/middleware/auth.js',
+      explanation: `Changed authentication token validation logic. The new implementation skips signature verification in certain edge cases, creating a potential authentication bypass vulnerability.`
+    }
+  );
+  
+  // COLLATERAL FILES - Unintended but necessary side effects
+  collateralFiles.push(
+    {
+      filename: 'package.json',
+      explanation: `Updated dependency versions to support new features. May require testing of existing functionality to ensure compatibility.`
+    },
+    {
+      filename: 'src/utils/helpers.js',
+      explanation: `Modified shared utility function signature to accommodate new requirements. Dependent modules may need updates if they rely on the old signature.`
+    },
+    {
+      filename: 'src/config/constants.js',
+      explanation: `Added new configuration constants for the feature. Ensure environment variables are set in production deployment.`
+    }
+  );
+  
+  return {
+    risky: riskyFiles,
+    collateral: collateralFiles,
+    intended: primaryFiles
   };
 }
 
@@ -134,99 +255,113 @@ export async function POST(request) {
 
     const { owner, repo, pullNumber } = prData;
 
-    // Fetch PR files from GitHub API
-    const githubApiUrl = `https://api.github.com/repos/${owner}/${repo}/pulls/${pullNumber}/files`;
-    const githubResponse = await fetch(githubApiUrl, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'BobWatch-App'
-      }
-    });
-
-    if (!githubResponse.ok) {
-      if (githubResponse.status === 404) {
-        return NextResponse.json(
-          { 
-            status: 'error', 
-            message: 'Pull request not found. Please check the URL and try again.',
-            code: 'PR_NOT_FOUND'
-          },
-          { status: 404 }
-        );
-      }
-      
-      if (githubResponse.status === 403) {
-        return NextResponse.json(
-          { 
-            status: 'error', 
-            message: 'GitHub API rate limit exceeded. Please try again later.',
-            code: 'RATE_LIMIT'
-          },
-          { status: 429 }
-        );
-      }
-
-      throw new Error(`GitHub API error: ${githubResponse.status}`);
-    }
-
-    const files = await githubResponse.json();
-
-    if (!files || files.length === 0) {
-      return NextResponse.json(
-        { 
-          status: 'error', 
-          message: 'No files found in this pull request.',
-          code: 'NO_FILES'
-        },
-        { status: 400 }
-      );
-    }
-
-    // Format diff for AI
-    const formattedDiff = formatDiffForAI(files);
-
-    // Build prompt
-    const prompt = buildPrompt(userIntent, formattedDiff);
-
-    // Call Gemini API
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ 
-      model: 'gemini-2.0-flash-exp',
-      generationConfig: {
-        responseMimeType: 'application/json'
-      }
-    });
-
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
-    
-    // Parse AI response
+    // PRESENTATION MODE: Generate mock data instead of calling GitHub API
     let aiResponse;
-    try {
-      aiResponse = JSON.parse(responseText);
-    } catch (parseError) {
-      console.error('Failed to parse Gemini response:', responseText);
-      return NextResponse.json(
-        { 
-          status: 'error', 
-          message: 'Failed to parse AI response. Please try again.',
-          code: 'INVALID_AI_RESPONSE'
-        },
-        { status: 500 }
-      );
-    }
+    
+    if (PRESENTATION_MODE) {
+      // Generate contextual presentation data
+      console.log('🎭 PRESENTATION MODE: Generating mock analysis data');
+      aiResponse = generatePresentationData(userIntent, prData);
+      
+      // Add small delay to simulate processing
+      await new Promise(resolve => setTimeout(resolve, 800));
+    } else {
+      // PRODUCTION MODE: Fetch from GitHub and analyze with AI
+      console.log('🔍 PRODUCTION MODE: Fetching from GitHub API');
+      
+      // Fetch PR files from GitHub API
+      const githubApiUrl = `https://api.github.com/repos/${owner}/${repo}/pulls/${pullNumber}/files`;
+      const githubResponse = await fetch(githubApiUrl, {
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+          'User-Agent': 'BobWatch-App'
+        }
+      });
 
-    // Validate response structure
-    if (!aiResponse.risky || !aiResponse.collateral || !aiResponse.intended) {
-      console.error('Invalid AI response structure:', aiResponse);
-      return NextResponse.json(
-        { 
-          status: 'error', 
-          message: 'Invalid AI response structure. Please try again.',
-          code: 'INVALID_AI_RESPONSE'
-        },
-        { status: 500 }
-      );
+      if (!githubResponse.ok) {
+        if (githubResponse.status === 404) {
+          return NextResponse.json(
+            {
+              status: 'error',
+              message: 'Pull request not found. Please check the URL and try again.',
+              code: 'PR_NOT_FOUND'
+            },
+            { status: 404 }
+          );
+        }
+        
+        if (githubResponse.status === 403) {
+          return NextResponse.json(
+            {
+              status: 'error',
+              message: 'GitHub API rate limit exceeded. Please try again later.',
+              code: 'RATE_LIMIT'
+            },
+            { status: 429 }
+          );
+        }
+
+        throw new Error(`GitHub API error: ${githubResponse.status}`);
+      }
+
+      const files = await githubResponse.json();
+
+      if (!files || files.length === 0) {
+        return NextResponse.json(
+          {
+            status: 'error',
+            message: 'No files found in this pull request.',
+            code: 'NO_FILES'
+          },
+          { status: 400 }
+        );
+      }
+
+      // Format diff for AI
+      const formattedDiff = formatDiffForAI(files);
+
+      // Build prompt
+      const prompt = buildPrompt(userIntent, formattedDiff);
+
+      // Call Gemini API
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({
+        model: 'gemini-2.5-flash'
+      });
+
+      const result = await model.generateContent(prompt);
+      let responseText = result.response.text();
+      
+      // Remove markdown code blocks if present
+      responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      
+      // Parse AI response
+      try {
+        aiResponse = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('Failed to parse Gemini response:', responseText);
+        return NextResponse.json(
+          {
+            status: 'error',
+            message: 'Failed to parse AI response. Please try again.',
+            code: 'INVALID_AI_RESPONSE'
+          },
+          { status: 500 }
+        );
+      }
+
+      // Validate response structure
+      if (!aiResponse.risky || !aiResponse.collateral || !aiResponse.intended) {
+        console.error('Invalid AI response structure:', aiResponse);
+        return NextResponse.json(
+          {
+            status: 'error',
+            message: 'Invalid AI response structure. Please try again.',
+            code: 'INVALID_AI_RESPONSE'
+          },
+          { status: 500 }
+        );
+      }
     }
 
     // Calculate TRD score

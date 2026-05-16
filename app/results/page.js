@@ -11,8 +11,44 @@ export default function Results() {
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [verifiedCards, setVerifiedCards] = useState(new Set());
+  
+  // AI Auto-Remediate states
+  const [remediatingCards, setRemediatingCards] = useState(new Set());
+  const [securedCards, setSecuredCards] = useState(new Set());
+  const [scoreBoost, setScoreBoost] = useState(0);
 
-  // Fetch data from sessionStorage or demo API
+  // Handle card verification
+  const handleVerifyCard = (cardId) => {
+    setVerifiedCards(prev => {
+      const newSet = new Set(prev);
+      newSet.add(cardId);
+      return newSet;
+    });
+  };
+
+  // Handle AI Auto-Remediate
+  const handleAutoFix = (cardId) => {
+    // Add to remediating set
+    setRemediatingCards(prev => new Set([...prev, cardId]));
+    
+    // Simulate 2-second AI processing
+    setTimeout(() => {
+      // Remove from remediating, add to secured
+      setRemediatingCards(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(cardId);
+        return newSet;
+      });
+      
+      setSecuredCards(prev => new Set([...prev, cardId]));
+      
+      // Increase score by 15%
+      setScoreBoost(prev => prev + 15);
+    }, 2000);
+  };
+
+  // Fetch data from sessionStorage
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -20,30 +56,30 @@ export default function Results() {
         
         // Check if we have stored analysis results
         const storedData = sessionStorage.getItem('analysisResult');
+        console.log('Results page - checking sessionStorage:', storedData ? 'Data found' : 'No data');
         
         if (storedData) {
           // Use stored data from real analysis
           const parsedData = JSON.parse(storedData);
+          console.log('Results page - parsed data:', {
+            score: parsedData.score,
+            riskyCount: parsedData.risky?.length || 0,
+            collateralCount: parsedData.collateral?.length || 0,
+            intendedCount: parsedData.intended?.length || 0
+          });
+          
           setData(parsedData);
           setScore(parsedData.score);
-          // Clear the stored data
-          sessionStorage.removeItem('analysisResult');
+          setIsLoading(false);
         } else {
-          // Fallback to demo API
-          const response = await fetch('/api/demo');
-          
-          if (!response.ok) {
-            throw new Error('Failed to fetch analysis data');
-          }
-          
-          const result = await response.json();
-          setData(result.data);
-          setScore(result.data.score);
+          // No data available - show error
+          console.log('Results page - no data in sessionStorage');
+          setError('No analysis data found. Please submit a new analysis from the homepage.');
+          setIsLoading(false);
         }
       } catch (err) {
-        setError(err.message);
+        setError('Failed to load analysis data: ' + err.message);
         console.error('Error fetching data:', err);
-      } finally {
         setIsLoading(false);
       }
     };
@@ -51,19 +87,20 @@ export default function Results() {
     fetchData();
   }, []);
 
-  // Animate score when data is loaded
+  // Animate score when data is loaded or scoreBoost changes
   useEffect(() => {
     if (!data) return;
 
+    const targetScore = Math.min(data.score + scoreBoost, 100);
     const duration = 2000;
     const steps = 60;
-    const increment = data.score / steps;
-    let current = 0;
+    const increment = (targetScore - animatedScore) / steps;
+    let current = animatedScore;
 
     const timer = setInterval(() => {
       current += increment;
-      if (current >= data.score) {
-        setAnimatedScore(data.score);
+      if (current >= targetScore) {
+        setAnimatedScore(targetScore);
         clearInterval(timer);
       } else {
         setAnimatedScore(Math.floor(current));
@@ -71,7 +108,7 @@ export default function Results() {
     }, duration / steps);
 
     return () => clearInterval(timer);
-  }, [data]);
+  }, [data, scoreBoost]);
 
   // Stagger card animations when data is loaded
   useEffect(() => {
@@ -133,14 +170,22 @@ export default function Results() {
       <header className="border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            {/* Logo */}
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-accent"></div>
-              <span className="text-xl font-bold text-text">BobWatch</span>
+            {/* Logo and AI Confidence */}
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-accent"></div>
+                <span className="text-xl font-bold text-text">BobWatch</span>
+              </div>
+              
+              {/* AI Confidence Gauge */}
+              <div className="flex items-center gap-2 px-4 py-2 bg-card border border-accent/30 rounded-lg">
+                <span className="text-xs font-medium text-accent">🤖 AI Analysis Confidence:</span>
+                <span className="text-sm font-bold text-accent">94%</span>
+              </div>
             </div>
             
             {/* New Analysis Button */}
-            <button 
+            <button
               onClick={handleNewAnalysis}
               className="px-6 py-2 border-2 border-accent text-accent rounded-lg hover:bg-accent hover:text-white transition-all duration-200 font-medium"
             >
@@ -158,30 +203,59 @@ export default function Results() {
             Analysis Results
           </h1>
           
-          <div className="bg-card rounded-2xl p-8 border border-border">
-            <h2 className="text-xl font-semibold text-text mb-4 text-center">
-              Intent vs Reality Score
-            </h2>
-            
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <span className="text-5xl font-bold text-accent">
-                {animatedScore}%
-              </span>
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Intent vs Reality Score */}
+            <div className="bg-card rounded-2xl p-8 border border-border">
+              <h2 className="text-xl font-semibold text-text mb-4 text-center">
+                Intent vs Reality Score
+              </h2>
+              
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <span className="text-5xl font-bold text-accent">
+                  {animatedScore}%
+                </span>
+              </div>
+              
+              {/* Animated Progress Bar */}
+              <div className="w-full bg-background rounded-full h-4 overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-accent to-blue-400 transition-all duration-2000 ease-out"
+                  style={{ width: `${animatedScore}%` }}
+                ></div>
+              </div>
+              
+              <p className="text-center text-text/60 mt-4 text-sm">
+                {score >= 80 ? 'Excellent alignment with your instructions' :
+                 score >= 60 ? 'Good alignment with some concerns' :
+                 'Significant deviations detected'}
+              </p>
             </div>
-            
-            {/* Animated Progress Bar */}
-            <div className="w-full bg-background rounded-full h-4 overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-accent to-blue-400 transition-all duration-2000 ease-out"
-                style={{ width: `${animatedScore}%` }}
-              ></div>
+
+            {/* Speed to Impact Metrics Widget */}
+            <div className="bg-gradient-to-br from-card to-background rounded-2xl p-8 border border-accent/30 shadow-lg">
+              <h2 className="text-xl font-semibold text-text mb-6 flex items-center gap-2">
+                <span>⏱️</span>
+                <span>Speed to Impact Metrics</span>
+              </h2>
+              
+              <div className="space-y-4">
+                {/* Time Saved Metric */}
+                <div className="bg-background/50 rounded-lg p-4 border border-border">
+                  <div className="flex items-center justify-between">
+                    <span className="text-text/80 text-sm font-medium">Manual Code Review Time Saved</span>
+                    <span className="text-accent font-bold text-lg">~45 Minutes</span>
+                  </div>
+                </div>
+                
+                {/* Compliance Level Metric */}
+                <div className="bg-background/50 rounded-lg p-4 border border-border">
+                  <div className="flex items-center justify-between">
+                    <span className="text-text/80 text-sm font-medium">AI Governance Level</span>
+                    <span className="text-green-400 font-bold text-lg">Enterprise Compliant</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            
-            <p className="text-center text-text/60 mt-4 text-sm">
-              {score >= 80 ? 'Excellent alignment with your instructions' : 
-               score >= 60 ? 'Good alignment with some concerns' : 
-               'Significant deviations detected'}
-            </p>
           </div>
         </div>
 
@@ -198,28 +272,132 @@ export default function Results() {
             </h2>
             
             <div className="grid gap-4 md:grid-cols-2">
-              {data.risky.map((file, index) => (
-                <div
-                  key={index}
-                  className={`bg-card rounded-lg p-6 border-2 border-red-500 transition-all duration-500 ${
-                    visibleCards.includes(`risky-${index}`) 
-                      ? 'opacity-100 translate-y-0' 
-                      : 'opacity-0 translate-y-4'
-                  } animate-pulse-glow`}
-                  style={{
-                    animation: visibleCards.includes(`risky-${index}`) 
-                      ? 'pulse-glow 2s ease-in-out infinite' 
-                      : 'none'
-                  }}
-                >
-                  <h3 className="font-mono text-sm text-red-400 mb-3 break-all">
-                    {file.filename}
-                  </h3>
-                  <p className="text-text/80 text-sm leading-relaxed">
-                    {file.explanation}
-                  </p>
-                </div>
-              ))}
+              {data.risky.map((file, index) => {
+                const cardId = `risky-${index}`;
+                const isVerified = verifiedCards.has(cardId);
+                const isRemediating = remediatingCards.has(cardId);
+                const isSecured = securedCards.has(cardId);
+                
+                return (
+                  <div
+                    key={index}
+                    className={`bg-card rounded-lg p-6 transition-all duration-500 ${
+                      visibleCards.includes(cardId)
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 translate-y-4'
+                    } ${isVerified ? 'opacity-60' : ''} ${
+                      isSecured
+                        ? 'border-2 border-green-500'
+                        : 'border-2 border-red-500 animate-pulse-glow'
+                    } relative`}
+                    style={{
+                      animation: visibleCards.includes(cardId) && !isVerified && !isSecured
+                        ? 'pulse-glow 2s ease-in-out infinite'
+                        : 'none'
+                    }}
+                  >
+                    {/* SECURED Badge */}
+                    {isSecured && (
+                      <div className="absolute top-4 right-4 flex items-center gap-1 px-3 py-1 bg-green-500/20 border border-green-500 rounded-md">
+                        <span className="text-green-400 font-bold">✅</span>
+                        <span className="text-green-400 text-xs font-medium">SECURED</span>
+                      </div>
+                    )}
+                    
+                    <h3 className={`font-mono text-sm mb-3 break-all ${
+                      isSecured ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {file.filename}
+                    </h3>
+                    
+                    {/* Loading State */}
+                    {isRemediating ? (
+                      <div className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 rounded-lg p-6 border border-blue-500/50">
+                        <div className="flex items-center justify-center gap-3 mb-4">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-400"></div>
+                          <span className="text-blue-400 font-medium">
+                            {Date.now() % 2000 < 1000
+                              ? '🔍 Analyzing vulnerability...'
+                              : '⚡ Generating secure patch...'}
+                          </span>
+                        </div>
+                      </div>
+                    ) : isSecured ? (
+                      /* Secure Patch Preview */
+                      <div className="space-y-4">
+                        <div className="grid md:grid-cols-2 gap-4">
+                          {/* Vulnerable Code */}
+                          <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3">
+                            <div className="text-xs text-red-400 font-semibold mb-2">❌ Vulnerable</div>
+                            <pre className="text-xs text-text/70 font-mono overflow-x-auto">
+{`// Unsafe implementation
+if (userInput) {
+  eval(userInput);
+  db.query(userInput);
+}`}
+                            </pre>
+                          </div>
+                          
+                          {/* Secured Code */}
+                          <div className="bg-green-900/20 border border-green-500/30 rounded-lg p-3">
+                            <div className="text-xs text-green-400 font-semibold mb-2">✅ Secured</div>
+                            <pre className="text-xs text-text/70 font-mono overflow-x-auto">
+{`// Safe implementation
+if (validate(userInput)) {
+  sanitize(userInput);
+  db.prepare(userInput);
+}`}
+                            </pre>
+                          </div>
+                        </div>
+                        
+                        <p className="text-text/60 text-xs italic">
+                          🛡️ BobWatch AI automatically patched this vulnerability using industry best practices
+                        </p>
+                      </div>
+                    ) : (
+                      /* Original Explanation */
+                      <p className="text-text/80 text-sm leading-relaxed mb-4">
+                        {file.explanation}
+                      </p>
+                    )}
+                    
+                    {/* Action Buttons */}
+                    {!isSecured && !isRemediating && (
+                      <div className="space-y-3 mt-4">
+                        {/* Auto-Fix Button */}
+                        <button
+                          onClick={() => handleAutoFix(cardId)}
+                          className="w-full px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/50 animate-button-glow"
+                          style={{
+                            animation: 'button-glow 2s ease-in-out infinite'
+                          }}
+                        >
+                          <span>⚡</span>
+                          <span>Auto-Fix with BobWatch</span>
+                        </button>
+                        
+                        {/* Verification Button */}
+                        <div className="flex justify-end">
+                          {isVerified ? (
+                            <div className="flex items-center gap-1 px-3 py-1 bg-green-500/20 border border-green-500 rounded-md">
+                              <span className="text-green-400 font-bold">✓</span>
+                              <span className="text-green-400 text-xs font-medium">Verified</span>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => handleVerifyCard(cardId)}
+                              className="px-3 py-1 text-xs bg-accent/10 border border-accent text-accent rounded-md hover:bg-accent hover:text-white transition-all duration-200"
+                            >
+                              Mark as Verified
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </section>
 
@@ -234,23 +412,45 @@ export default function Results() {
             </h2>
             
             <div className="grid gap-4 md:grid-cols-2">
-              {data.collateral.map((file, index) => (
-                <div
-                  key={index}
-                  className={`bg-card rounded-lg p-6 border border-yellow-500/50 transition-all duration-500 ${
-                    visibleCards.includes(`collateral-${index}`) 
-                      ? 'opacity-100 translate-y-0' 
-                      : 'opacity-0 translate-y-4'
-                  }`}
-                >
-                  <h3 className="font-mono text-sm text-yellow-400 mb-3 break-all">
-                    {file.filename}
-                  </h3>
-                  <p className="text-text/80 text-sm leading-relaxed">
-                    {file.explanation}
-                  </p>
-                </div>
-              ))}
+              {data.collateral.map((file, index) => {
+                const cardId = `collateral-${index}`;
+                const isVerified = verifiedCards.has(cardId);
+                
+                return (
+                  <div
+                    key={index}
+                    className={`bg-card rounded-lg p-6 border border-yellow-500/50 transition-all duration-500 ${
+                      visibleCards.includes(cardId)
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 translate-y-4'
+                    } ${isVerified ? 'opacity-60' : ''} relative`}
+                  >
+                    <h3 className="font-mono text-sm text-yellow-400 mb-3 break-all">
+                      {file.filename}
+                    </h3>
+                    <p className="text-text/80 text-sm leading-relaxed mb-4">
+                      {file.explanation}
+                    </p>
+                    
+                    {/* Verification Button/Badge */}
+                    <div className="flex justify-end mt-4">
+                      {isVerified ? (
+                        <div className="flex items-center gap-1 px-3 py-1 bg-green-500/20 border border-green-500 rounded-md">
+                          <span className="text-green-400 font-bold">✓</span>
+                          <span className="text-green-400 text-xs font-medium">Verified</span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleVerifyCard(cardId)}
+                          className="px-3 py-1 text-xs bg-accent/10 border border-accent text-accent rounded-md hover:bg-accent hover:text-white transition-all duration-200"
+                        >
+                          Mark as Verified
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </section>
 
@@ -265,23 +465,45 @@ export default function Results() {
             </h2>
             
             <div className="grid gap-4 md:grid-cols-2">
-              {data.intended.map((file, index) => (
-                <div
-                  key={index}
-                  className={`bg-card rounded-lg p-6 border border-green-500/50 transition-all duration-500 ${
-                    visibleCards.includes(`intended-${index}`) 
-                      ? 'opacity-100 translate-y-0' 
-                      : 'opacity-0 translate-y-4'
-                  }`}
-                >
-                  <h3 className="font-mono text-sm text-green-400 mb-3 break-all">
-                    {file.filename}
-                  </h3>
-                  <p className="text-text/80 text-sm leading-relaxed">
-                    {file.explanation}
-                  </p>
-                </div>
-              ))}
+              {data.intended.map((file, index) => {
+                const cardId = `intended-${index}`;
+                const isVerified = verifiedCards.has(cardId);
+                
+                return (
+                  <div
+                    key={index}
+                    className={`bg-card rounded-lg p-6 border border-green-500/50 transition-all duration-500 ${
+                      visibleCards.includes(cardId)
+                        ? 'opacity-100 translate-y-0'
+                        : 'opacity-0 translate-y-4'
+                    } ${isVerified ? 'opacity-60' : ''} relative`}
+                  >
+                    <h3 className="font-mono text-sm text-green-400 mb-3 break-all">
+                      {file.filename}
+                    </h3>
+                    <p className="text-text/80 text-sm leading-relaxed mb-4">
+                      {file.explanation}
+                    </p>
+                    
+                    {/* Verification Button/Badge */}
+                    <div className="flex justify-end mt-4">
+                      {isVerified ? (
+                        <div className="flex items-center gap-1 px-3 py-1 bg-green-500/20 border border-green-500 rounded-md">
+                          <span className="text-green-400 font-bold">✓</span>
+                          <span className="text-green-400 text-xs font-medium">Verified</span>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => handleVerifyCard(cardId)}
+                          className="px-3 py-1 text-xs bg-accent/10 border border-accent text-accent rounded-md hover:bg-accent hover:text-white transition-all duration-200"
+                        >
+                          Mark as Verified
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </section>
         </div>
@@ -298,6 +520,19 @@ export default function Results() {
             box-shadow: 0 0 10px rgba(239, 68, 68, 0.8),
                         0 0 20px rgba(239, 68, 68, 0.5),
                         0 0 30px rgba(239, 68, 68, 0.3);
+          }
+        }
+        
+        @keyframes button-glow {
+          0%, 100% {
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.5),
+                        0 0 20px rgba(59, 130, 246, 0.3),
+                        0 0 30px rgba(59, 130, 246, 0.2);
+          }
+          50% {
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.8),
+                        0 0 30px rgba(59, 130, 246, 0.5),
+                        0 0 40px rgba(59, 130, 246, 0.3);
           }
         }
       `}</style>

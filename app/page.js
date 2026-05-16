@@ -30,10 +30,18 @@ export default function Home() {
       });
 
       const result = await response.json();
+      console.log('API Response:', result);
 
       if (result.status === 'success') {
         // Store results in sessionStorage for the results page
-        sessionStorage.setItem('analysisResult', JSON.stringify(result.data));
+        const dataToStore = result.data;
+        console.log('Storing analysis data:', dataToStore);
+        sessionStorage.setItem('analysisResult', JSON.stringify(dataToStore));
+        
+        // Verify storage
+        const stored = sessionStorage.getItem('analysisResult');
+        console.log('Verified stored data:', stored ? 'Data saved successfully' : 'Failed to save data');
+        
         router.push('/results');
       } else {
         // Handle error
@@ -73,7 +81,7 @@ export default function Home() {
           Trust What Bob Built
         </h1>
         <p className="text-lg sm:text-xl text-text/80 max-w-2xl mx-auto">
-          See exactly what Bob changed — and what it shouldn&apos;t have.
+          See exactly what Bob changed — and what it shouldn't have.
         </p>
       </section>
 
