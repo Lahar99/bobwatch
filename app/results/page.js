@@ -49,12 +49,6 @@ export default function Results() {
     };
 
     fetchData();
-
-    // Cleanup: Clear sessionStorage when component unmounts
-    return () => {
-      console.log('Results page - cleaning up sessionStorage');
-      sessionStorage.removeItem('analysisResult');
-    };
   }, []);
 
   // Animate score when data is loaded
