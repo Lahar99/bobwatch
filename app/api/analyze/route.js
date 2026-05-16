@@ -105,10 +105,12 @@ function generatePresentationData(userIntent, prData) {
   riskyFiles.push(
     {
       filename: 'src/config/database.js',
+      threatType: 'RESOURCE EXHAUSTION / CRITICAL',
       explanation: `Modified database connection pooling settings without updating timeout configurations. Could cause connection exhaustion under high load, leading to service degradation.`
     },
     {
       filename: 'src/middleware/auth.js',
+      threatType: 'PROMPT INJECTION / AUTH BYPASS',
       explanation: `Changed authentication token validation logic. The new implementation skips signature verification in certain edge cases, creating a potential authentication bypass vulnerability.`
     }
   );
