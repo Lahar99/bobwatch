@@ -108,7 +108,7 @@ export default function Results() {
     }, duration / steps);
 
     return () => clearInterval(timer);
-  }, [data, scoreBoost]);
+  }, [data, scoreBoost, animatedScore]);
 
   // Stagger card animations when data is loaded
   useEffect(() => {
