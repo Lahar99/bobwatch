@@ -195,6 +195,27 @@ export default function Results() {
         </div>
       </header>
 
+      {/* Lie Detector Alert Banner */}
+      {data.risky && data.risky.length > 0 && (
+        <div className="border-b border-red-500/30 bg-gradient-to-r from-red-900/90 to-orange-900/90 animate-pulse-border">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl flex-shrink-0 mt-0.5">🛡️</span>
+              <div className="flex-1">
+                <p className="text-white font-bold text-lg mb-1">
+                  LIE DETECTOR ALERT
+                </p>
+                <p className="text-white/90 text-sm leading-relaxed">
+                  Bob stated 'No core functionality has been changed,' but BobWatch detected{' '}
+                  <span className="font-bold text-red-300">{data.risky.length} unauthorized file modifications</span>{' '}
+                  and skipped signature verifications.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Score Section */}
@@ -241,9 +262,12 @@ export default function Results() {
               <div className="space-y-4">
                 {/* Time Saved Metric */}
                 <div className="bg-background/50 rounded-lg p-4 border border-border">
-                  <div className="flex items-center justify-between">
-                    <span className="text-text/80 text-sm font-medium">Manual Code Review Time Saved</span>
-                    <span className="text-accent font-bold text-lg">~45 Minutes</span>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">⏱️</span>
+                      <span className="text-accent font-bold text-lg">This session saved you ~45 minutes</span>
+                    </div>
+                    <span className="text-text/60 text-sm">of manual PR verification</span>
                   </div>
                 </div>
                 
@@ -301,6 +325,14 @@ export default function Results() {
                       <div className="absolute top-4 right-4 flex items-center gap-1 px-3 py-1 bg-green-500/20 border border-green-500 rounded-md">
                         <span className="text-green-400 font-bold">✅</span>
                         <span className="text-green-400 text-xs font-medium">SECURED</span>
+                      </div>
+                    )}
+                    
+                    {/* Threat Type Badge */}
+                    {!isSecured && file.threatType && (
+                      <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 bg-red-600/90 border-2 border-red-400 rounded-md animate-pulse-subtle">
+                        <span className="text-white font-bold text-xs">🚨 THREAT TYPE:</span>
+                        <span className="text-white font-bold text-xs">{file.threatType}</span>
                       </div>
                     )}
                     
@@ -534,6 +566,34 @@ if (validate(userInput)) {
                         0 0 30px rgba(59, 130, 246, 0.5),
                         0 0 40px rgba(59, 130, 246, 0.3);
           }
+        }
+        
+        @keyframes pulse-border {
+          0%, 100% {
+            border-color: rgba(239, 68, 68, 0.3);
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+          }
+          50% {
+            border-color: rgba(239, 68, 68, 0.6);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+          }
+        }
+        
+        @keyframes pulse-subtle {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.85;
+          }
+        }
+        
+        .animate-pulse-border {
+          animation: pulse-border 2s ease-in-out infinite;
+        }
+        
+        .animate-pulse-subtle {
+          animation: pulse-subtle 2s ease-in-out infinite;
         }
       `}</style>
     </main>
