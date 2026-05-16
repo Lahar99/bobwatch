@@ -190,15 +190,15 @@ export async function POST(request) {
 
     // Call Gemini API
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ 
-      model: 'gemini-2.0-flash-exp',
-      generationConfig: {
-        responseMimeType: 'application/json'
-      }
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash'
     });
 
     const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
+    let responseText = result.response.text();
+    
+    // Remove markdown code blocks if present
+    responseText = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
     
     // Parse AI response
     let aiResponse;
@@ -207,8 +207,8 @@ export async function POST(request) {
     } catch (parseError) {
       console.error('Failed to parse Gemini response:', responseText);
       return NextResponse.json(
-        { 
-          status: 'error', 
+        {
+          status: 'error',
           message: 'Failed to parse AI response. Please try again.',
           code: 'INVALID_AI_RESPONSE'
         },
