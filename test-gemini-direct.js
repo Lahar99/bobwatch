@@ -1,7 +1,7 @@
 // Direct test of Gemini API
 
 const testGemini = async () => {
-  const apiKey = 'AIzaSyDctN4SAwehjfwONvcdp6xFEP73EW8P-NQ';
+  const apiKey = 'AIzaSyD7hlcsCZe_JLoDgsWMYukQzIaIhkvv-EQ';
   
   console.log('🧪 Testing Gemini API directly...\n');
   
@@ -21,7 +21,7 @@ const testGemini = async () => {
   }
   
   // Try with the first available model
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
   
   const body = {
     contents: [{
