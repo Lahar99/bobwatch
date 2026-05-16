@@ -298,12 +298,12 @@ export async function POST(request) {
             console.log('🤖 Calling Gemini 2.5 Flash for security analysis...');
             const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
             const model = genAI.getGenerativeModel({
-              model: 'gemini-2.0-flash-exp',
+              model: 'gemini-2.5-flash',
               generationConfig: {
                 temperature: 0.3,
                 topP: 0.95,
                 topK: 40,
-                maxOutputTokens: 8192,
+                maxOutputTokens: 16384, // Increased for larger responses
               }
             });
 
@@ -316,9 +316,15 @@ export async function POST(request) {
             responseText = responseText
               .replace(/```json\n?/g, '')
               .replace(/```\n?/g, '')
-              .replace(/^[^{]*/, '') // Remove any text before first {
-              .replace(/[^}]*$/, '') // Remove any text after last }
               .trim();
+            
+            // Find the JSON object boundaries more carefully
+            const firstBrace = responseText.indexOf('{');
+            const lastBrace = responseText.lastIndexOf('}');
+            
+            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+              responseText = responseText.substring(firstBrace, lastBrace + 1);
+            }
             
             // Parse AI response with fallback on malformed JSON
             try {
@@ -332,6 +338,7 @@ export async function POST(request) {
               }
             } catch (parseError) {
               console.error('❌ Failed to parse Gemini response:', parseError.message);
+              console.log('📄 Problematic JSON snippet:', responseText.substring(Math.max(0, responseText.length - 200)));
               console.warn('⚠️ Falling back to presentation mode due to malformed JSON');
               aiResponse = generatePresentationData(userIntent, prData);
             }

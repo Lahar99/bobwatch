@@ -195,7 +195,7 @@ export default function Results() {
             Analysis Results
           </h1>
           
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-6 lg:grid-cols-3">
             {/* Score Circle - Centralized */}
             <div className="bg-card rounded-2xl p-6 sm:p-8 border border-border shadow-xl">
               <h2 className="text-lg sm:text-xl font-semibold text-text mb-6 text-center">
@@ -277,6 +277,144 @@ export default function Results() {
                     <span className="text-accent font-bold text-lg">
                       {data.risky.length + data.collateral.length + data.intended.length}
                     </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Roadmap Component */}
+            <div className="bg-gradient-to-br from-card via-background to-card rounded-2xl p-6 sm:p-8 border border-accent/40 shadow-xl">
+              <h2 className="text-lg sm:text-xl font-semibold text-text mb-6 flex items-center gap-2">
+                <span>🚀</span>
+                <span>Roadmap to 100% Intent Alignment</span>
+              </h2>
+              
+              <div className="space-y-3">
+                {/* Progress Bar */}
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-text/70 text-sm font-medium">Overall Progress</span>
+                    <span className="text-accent font-bold text-lg">{animatedScore}%</span>
+                  </div>
+                  <div className="w-full bg-border rounded-full h-3 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-accent to-green-500 rounded-full transition-all duration-1000 ease-out"
+                      style={{ width: `${animatedScore}%` }}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Dynamic Checklist */}
+                <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
+                  {/* RISKY Items */}
+                  {data.risky && data.risky.map((file, index) => {
+                    const cardId = `risky-${index}`;
+                    const isSecured = securedCards.has(cardId);
+                    
+                    return (
+                      <div
+                        key={cardId}
+                        className={`flex items-start gap-3 p-3 rounded-lg border transition-all duration-500 ${
+                          isSecured
+                            ? 'bg-green-900/10 border-green-500/30 opacity-60'
+                            : 'bg-red-900/10 border-red-500/30 hover:bg-red-900/20'
+                        }`}
+                      >
+                        <div className="flex-shrink-0 mt-0.5">
+                          {isSecured ? (
+                            <span className="text-green-400 text-lg">✅</span>
+                          ) : (
+                            <span className="text-red-400 text-lg">🔴</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-medium ${
+                            isSecured ? 'line-through text-text/50' : 'text-text/90'
+                          }`}>
+                            {isSecured ? (
+                              <>Resolved <span className="font-mono text-xs">{file.filename}</span> threat</>
+                            ) : (
+                              <>Resolve <span className="font-mono text-xs">{file.filename}</span> threat</>
+                            )}
+                          </p>
+                          {!isSecured && (
+                            <p className="text-xs text-text/60 mt-1">
+                              +15% Score — Click Auto-Fix to apply secure patch
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* COLLATERAL Items */}
+                  {data.collateral && data.collateral.map((file, index) => {
+                    const cardId = `collateral-${index}`;
+                    const isVerified = verifiedCards.has(cardId);
+                    
+                    return (
+                      <div
+                        key={cardId}
+                        className={`flex items-start gap-3 p-3 rounded-lg border transition-all duration-500 ${
+                          isVerified
+                            ? 'bg-green-900/10 border-green-500/30 opacity-60'
+                            : 'bg-yellow-900/10 border-yellow-500/30 hover:bg-yellow-900/20'
+                        }`}
+                      >
+                        <div className="flex-shrink-0 mt-0.5">
+                          {isVerified ? (
+                            <span className="text-green-400 text-lg">✅</span>
+                          ) : (
+                            <span className="text-yellow-400 text-lg">⚠️</span>
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-medium ${
+                            isVerified ? 'line-through text-text/50' : 'text-text/90'
+                          }`}>
+                            {isVerified ? (
+                              <>Reviewed <span className="font-mono text-xs">{file.filename}</span> modifications</>
+                            ) : (
+                              <>Review <span className="font-mono text-xs">{file.filename}</span> structural modifications</>
+                            )}
+                          </p>
+                          {!isVerified && (
+                            <p className="text-xs text-text/60 mt-1">
+                              +5% Score — Verify no downstream breaking changes
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* All Clear Message */}
+                  {data.risky.length === 0 && data.collateral.length === 0 && (
+                    <div className="flex items-center gap-3 p-4 rounded-lg bg-green-900/20 border border-green-500/40">
+                      <span className="text-green-400 text-2xl">🎉</span>
+                      <div>
+                        <p className="text-green-400 font-semibold text-sm">Perfect Alignment!</p>
+                        <p className="text-text/60 text-xs mt-1">All changes match your intent</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Summary Stats */}
+                <div className="mt-4 pt-4 border-t border-border/50">
+                  <div className="grid grid-cols-2 gap-3 text-center">
+                    <div className="bg-background/50 rounded-lg p-2">
+                      <div className="text-accent font-bold text-lg">
+                        {data.risky.filter((_, i) => securedCards.has(`risky-${i}`)).length}/{data.risky.length}
+                      </div>
+                      <div className="text-text/60 text-xs">Threats Fixed</div>
+                    </div>
+                    <div className="bg-background/50 rounded-lg p-2">
+                      <div className="text-accent font-bold text-lg">
+                        {data.collateral.filter((_, i) => verifiedCards.has(`collateral-${i}`)).length}/{data.collateral.length}
+                      </div>
+                      <div className="text-text/60 text-xs">Reviews Done</div>
+                    </div>
                   </div>
                 </div>
               </div>
