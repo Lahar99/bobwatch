@@ -2,9 +2,32 @@
 
 BobWatch is an AI-powered code review tool that analyzes GitHub Pull Requests to verify if changes match your original intent. It uses Google Gemini 2.5 Flash to categorize code changes as **Intended**, **Collateral**, or **Risky**, providing a Trust Reality Delta (TRD) score.
 
+## 🌐 Live Demo
+
+**Try it now:** [https://bobwatch.vercel.app/](https://bobwatch.vercel.app/)
+
+The app is fully deployed and ready to analyze any public GitHub Pull Request!
+
 ---
 
-## 🚀 Features
+## 📊 Project Status
+
+**Status:** ✅ **LIVE & PRODUCTION READY**
+
+**Latest Updates:**
+- ✅ Fully deployed on Vercel
+- ✅ Gemini 2.5 Flash integration working
+- ✅ GitHub API integration complete
+- ✅ TRD scoring algorithm implemented
+- ✅ Beautiful animated UI with loading states
+- ✅ Comprehensive error handling
+- ✅ Real-time PR analysis functional
+
+**Try it now:** [https://bobwatch.vercel.app/](https://bobwatch.vercel.app/)
+
+---
+
+##  Features
 
 - **AI-Powered Analysis** - Uses Gemini 2.5 Flash for intelligent code review
 - **GitHub Integration** - Analyzes any public GitHub Pull Request
@@ -210,7 +233,20 @@ const model = genAI.getGenerativeModel({
 
 ## 📦 Deployment
 
-### Vercel (Recommended)
+### ✅ Live on Vercel
+
+**Production URL:** [https://bobwatch.vercel.app/](https://bobwatch.vercel.app/)
+
+The app is currently deployed and running on Vercel with:
+- ✅ Gemini 2.5 Flash AI integration
+- ✅ GitHub PR analysis
+- ✅ Real-time TRD scoring
+- ✅ Beautiful animated dashboard
+- ✅ Full error handling
+
+### Deploy Your Own
+
+#### Vercel (Recommended)
 
 1. Push code to GitHub
 2. Import project in Vercel
@@ -219,7 +255,7 @@ const model = genAI.getGenerativeModel({
    - Value: Your API key
 4. Deploy!
 
-### Other Platforms
+#### Other Platforms
 
 Set the `GEMINI_API_KEY` environment variable in your platform's settings.
 
@@ -325,6 +361,16 @@ Having issues? Check:
 
 ## 🎯 Roadmap
 
+### ✅ Completed
+- [x] Core AI analysis with Gemini 2.5 Flash
+- [x] GitHub PR integration
+- [x] TRD scoring algorithm
+- [x] Beautiful animated dashboard
+- [x] Production deployment on Vercel
+- [x] Error handling and validation
+- [x] Real-time loading states
+
+### 🚧 Planned Features
 - [ ] Support for private repositories (GitHub token auth)
 - [ ] Commit URL support (not just PRs)
 - [ ] Multiple AI model options
@@ -333,6 +379,8 @@ Having issues? Check:
 - [ ] Team collaboration features
 - [ ] Custom scoring weights
 - [ ] Webhook integration
+- [ ] Browser extension
+- [ ] CLI tool
 
 ---
 
