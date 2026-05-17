@@ -3,325 +3,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-<<<<<<< HEAD
-// Self-Healing File Download Engine
-const downloadFixedFile = (filename, fixedContent) => {
-  // Determine MIME type based on file extension
-  const extension = filename.split('.').pop().toLowerCase();
-  const mimeTypes = {
-    'js': 'text/javascript',
-    'jsx': 'text/javascript',
-    'ts': 'text/typescript',
-    'tsx': 'text/typescript',
-    'json': 'application/json',
-    'css': 'text/css',
-    'html': 'text/html',
-    'htm': 'text/html',
-    'xml': 'application/xml',
-    'md': 'text/markdown',
-    'txt': 'text/plain'
-  };
-  
-  const mimeType = mimeTypes[extension] || 'text/plain';
-  
-  // Create Blob with appropriate MIME type
-  const blob = new Blob([fixedContent], { type: mimeType });
-  
-  // Generate download URL
-  const url = URL.createObjectURL(blob);
-  
-  // Create temporary anchor element and trigger download
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = filename;
-  anchor.style.display = 'none';
-  
-  document.body.appendChild(anchor);
-  anchor.click();
-  
-  // Cleanup
-  document.body.removeChild(anchor);
-  setTimeout(() => URL.revokeObjectURL(url), 100);
-};
-
-// Generate secure code patches for RISKY files
-const generateSecureCode = (filename, threatType) => {
-  const extension = filename.split('.').pop().toLowerCase();
-  const isTypeScript = extension === 'ts' || extension === 'tsx';
-  const isReact = extension === 'jsx' || extension === 'tsx';
-  
-  // Base imports
-  let code = `// 🛡️ BobWatch AI Security Patch\n`;
-  code += `// File: ${filename}\n`;
-  code += `// Threat Mitigated: ${threatType || 'Security Vulnerability'}\n`;
-  code += `// Generated: ${new Date().toISOString()}\n\n`;
-  
-  // Threat-specific secure implementations
-  switch (threatType) {
-    case 'SQL Injection':
-      code += isTypeScript
-        ? `import { Pool } from 'pg';\n\n`
-        : `const { Pool } = require('pg');\n\n`;
-      code += `// ✅ SECURED: Using parameterized queries\n`;
-      code += `const pool = new Pool({\n`;
-      code += `  host: process.env.DB_HOST,\n`;
-      code += `  database: process.env.DB_NAME,\n`;
-      code += `  user: process.env.DB_USER,\n`;
-      code += `  password: process.env.DB_PASSWORD,\n`;
-      code += `});\n\n`;
-      code += `async function getUserData(userId${isTypeScript ? ': string' : ''}) {\n`;
-      code += `  // Parameterized query prevents SQL injection\n`;
-      code += `  const query = 'SELECT * FROM users WHERE id = $1';\n`;
-      code += `  const values = [userId];\n`;
-      code += `  \n`;
-      code += `  try {\n`;
-      code += `    const result = await pool.query(query, values);\n`;
-      code += `    return result.rows[0];\n`;
-      code += `  } catch (error) {\n`;
-      code += `    console.error('Database error:', error);\n`;
-      code += `    throw new Error('Failed to fetch user data');\n`;
-      code += `  }\n`;
-      code += `}\n\n`;
-      code += isTypeScript ? `export { getUserData };\n` : `module.exports = { getUserData };\n`;
-      break;
-      
-    case 'XSS':
-      if (isReact) {
-        code += `import React from 'react';\n`;
-        code += `import DOMPurify from 'isomorphic-dompurify';\n\n`;
-        code += `// ✅ SECURED: Sanitized user input rendering\n`;
-        code += `function SafeUserContent({ userInput }${isTypeScript ? ': { userInput: string }' : ''}) {\n`;
-        code += `  // Sanitize HTML to prevent XSS attacks\n`;
-        code += `  const sanitizedContent = DOMPurify.sanitize(userInput, {\n`;
-        code += `    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br'],\n`;
-        code += `    ALLOWED_ATTR: []\n`;
-        code += `  });\n\n`;
-        code += `  return (\n`;
-        code += `    <div \n`;
-        code += `      dangerouslySetInnerHTML={{ __html: sanitizedContent }}\n`;
-        code += `      className="user-content"\n`;
-        code += `    />\n`;
-        code += `  );\n`;
-        code += `}\n\n`;
-        code += `export default SafeUserContent;\n`;
-      } else {
-        code += `// ✅ SECURED: Input sanitization and output encoding\n`;
-        code += `function sanitizeInput(userInput${isTypeScript ? ': string' : ''})${isTypeScript ? ': string' : ''} {\n`;
-        code += `  // Remove dangerous characters and encode HTML entities\n`;
-        code += `  return userInput\n`;
-        code += `    .replace(/[<>\"']/g, (char) => {\n`;
-        code += `      const entities = { '<': '<', '>': '>', '"': '"', "'": '&#x27;' };\n`;
-        code += `      return entities[char] || char;\n`;
-        code += `    })\n`;
-        code += `    .trim();\n`;
-        code += `}\n\n`;
-        code += `function renderUserContent(userInput${isTypeScript ? ': string' : ''})${isTypeScript ? ': string' : ''} {\n`;
-        code += `  const sanitized = sanitizeInput(userInput);\n`;
-        code += `  return \`<div class="user-content">\${sanitized}</div>\`;\n`;
-        code += `}\n\n`;
-        code += isTypeScript
-          ? `export { sanitizeInput, renderUserContent };\n`
-          : `module.exports = { sanitizeInput, renderUserContent };\n`;
-      }
-      break;
-      
-    case 'Command Injection':
-      code += isTypeScript
-        ? `import { exec } from 'child_process';\nimport { promisify } from 'util';\n\n`
-        : `const { exec } = require('child_process');\nconst { promisify } = require('util');\n\n`;
-      code += `const execAsync = promisify(exec);\n\n`;
-      code += `// ✅ SECURED: Safe command execution with validation\n`;
-      code += `const ALLOWED_COMMANDS = ['ls', 'pwd', 'date', 'whoami'];\n\n`;
-      code += `async function executeCommand(command${isTypeScript ? ': string' : ''}) {\n`;
-      code += `  // Validate command against whitelist\n`;
-      code += `  const baseCommand = command.split(' ')[0];\n`;
-      code += `  \n`;
-      code += `  if (!ALLOWED_COMMANDS.includes(baseCommand)) {\n`;
-      code += `    throw new Error(\`Command not allowed: \${baseCommand}\`);\n`;
-      code += `  }\n\n`;
-      code += `  // Sanitize input - remove dangerous characters\n`;
-      code += `  const sanitized = command.replace(/[;&|<>$\`\\\\]/g, '');\n\n`;
-      code += `  try {\n`;
-      code += `    const { stdout, stderr } = await execAsync(sanitized, {\n`;
-      code += `      timeout: 5000,\n`;
-      code += `      maxBuffer: 1024 * 1024\n`;
-      code += `    });\n`;
-      code += `    return stdout;\n`;
-      code += `  } catch (error) {\n`;
-      code += `    console.error('Command execution error:', error);\n`;
-      code += `    throw new Error('Command execution failed');\n`;
-      code += `  }\n`;
-      code += `}\n\n`;
-      code += isTypeScript ? `export { executeCommand };\n` : `module.exports = { executeCommand };\n`;
-      break;
-      
-    case 'Path Traversal':
-      code += isTypeScript
-        ? `import path from 'path';\nimport fs from 'fs/promises';\n\n`
-        : `const path = require('path');\nconst fs = require('fs').promises;\n\n`;
-      code += `// ✅ SECURED: Safe file access with path validation\n`;
-      code += `const SAFE_DIRECTORY = path.join(__dirname, 'uploads');\n\n`;
-      code += `async function readUserFile(filename${isTypeScript ? ': string' : ''}) {\n`;
-      code += `  // Normalize and validate path\n`;
-      code += `  const normalizedPath = path.normalize(filename).replace(/^(\\.\\.\\/)+/, '');\n`;
-      code += `  const fullPath = path.join(SAFE_DIRECTORY, normalizedPath);\n\n`;
-      code += `  // Ensure path is within safe directory\n`;
-      code += `  if (!fullPath.startsWith(SAFE_DIRECTORY)) {\n`;
-      code += `    throw new Error('Access denied: Path traversal detected');\n`;
-      code += `  }\n\n`;
-      code += `  try {\n`;
-      code += `    const content = await fs.readFile(fullPath, 'utf-8');\n`;
-      code += `    return content;\n`;
-      code += `  } catch (error) {\n`;
-      code += `    console.error('File read error:', error);\n`;
-      code += `    throw new Error('Failed to read file');\n`;
-      code += `  }\n`;
-      code += `}\n\n`;
-      code += isTypeScript ? `export { readUserFile };\n` : `module.exports = { readUserFile };\n`;
-      break;
-      
-    default:
-      // Generic security hardening
-      code += `// ✅ SECURED: Generic security hardening applied\n\n`;
-      code += `// Input validation helper\n`;
-      code += `function validateInput(input${isTypeScript ? ': any' : ''})${isTypeScript ? ': boolean' : ''} {\n`;
-      code += `  if (!input || typeof input !== 'string') return false;\n`;
-      code += `  if (input.length > 1000) return false;\n`;
-      code += `  if (/[<>\"';\`]/.test(input)) return false;\n`;
-      code += `  return true;\n`;
-      code += `}\n\n`;
-      code += `// Secure data processing\n`;
-      code += `function processSecurely(data${isTypeScript ? ': string' : ''}) {\n`;
-      code += `  if (!validateInput(data)) {\n`;
-      code += `    throw new Error('Invalid input detected');\n`;
-      code += `  }\n\n`;
-      code += `  // Process with security measures\n`;
-      code += `  const sanitized = data.trim().toLowerCase();\n`;
-      code += `  return sanitized;\n`;
-      code += `}\n\n`;
-      code += isTypeScript
-        ? `export { validateInput, processSecurely };\n`
-        : `module.exports = { validateInput, processSecurely };\n`;
-  }
-  
-  return code;
-};
-
-// Generate realignment patches for COLLATERAL files
-const generateRealignedCode = (filename, explanation) => {
-  const extension = filename.split('.').pop().toLowerCase();
-  const isTypeScript = extension === 'ts' || extension === 'tsx';
-  const isReact = extension === 'jsx' || extension === 'tsx';
-  
-  let code = `// 🔄 BobWatch AI Realignment Patch\n`;
-  code += `// File: ${filename}\n`;
-  code += `// Purpose: Structural synchronization for downstream compatibility\n`;
-  code += `// Generated: ${new Date().toISOString()}\n\n`;
-  
-  // Generate context-aware realignment based on explanation
-  if (explanation.toLowerCase().includes('import') || explanation.toLowerCase().includes('export')) {
-    code += `// ✅ REALIGNED: Updated imports/exports for consistency\n\n`;
-    if (isReact) {
-      code += `import React from 'react';\n`;
-      code += `import { useState, useEffect } from 'react';\n\n`;
-      code += `// Updated component structure\n`;
-      code += `function RealignedComponent()${isTypeScript ? ': JSX.Element' : ''} {\n`;
-      code += `  const [state, setState] = useState(null);\n\n`;
-      code += `  useEffect(() => {\n`;
-      code += `    // Synchronized with upstream changes\n`;
-      code += `    console.log('Component realigned');\n`;
-      code += `  }, []);\n\n`;
-      code += `  return <div>Realigned Component</div>;\n`;
-      code += `}\n\n`;
-      code += `export default RealignedComponent;\n`;
-    } else {
-      code += isTypeScript
-        ? `import { Config } from './types';\n\n`
-        : `const { Config } = require('./types');\n\n`;
-      code += `// Realigned module structure\n`;
-      code += `const realignedModule = {\n`;
-      code += `  init() {\n`;
-      code += `    console.log('Module realigned with upstream changes');\n`;
-      code += `  },\n`;
-      code += `  process(data${isTypeScript ? ': any' : ''}) {\n`;
-      code += `    return data;\n`;
-      code += `  }\n`;
-      code += `};\n\n`;
-      code += isTypeScript
-        ? `export default realignedModule;\n`
-        : `module.exports = realignedModule;\n`;
-    }
-  } else if (explanation.toLowerCase().includes('function') || explanation.toLowerCase().includes('method')) {
-    code += `// ✅ REALIGNED: Updated function signatures\n\n`;
-    code += `// Synchronized function with new parameter structure\n`;
-    code += `function realignedFunction(\n`;
-    code += `  param1${isTypeScript ? ': string' : ''},\n`;
-    code += `  param2${isTypeScript ? ': number' : ''},\n`;
-    code += `  options${isTypeScript ? '?: { verbose?: boolean }' : ' = {}'}\n`;
-    code += `)${isTypeScript ? ': void' : ''} {\n`;
-    code += `  // Updated to match upstream interface changes\n`;
-    code += `  console.log('Function realigned:', param1, param2, options);\n`;
-    code += `}\n\n`;
-    code += isTypeScript
-      ? `export { realignedFunction };\n`
-      : `module.exports = { realignedFunction };\n`;
-  } else if (explanation.toLowerCase().includes('config') || explanation.toLowerCase().includes('setting')) {
-    code += `// ✅ REALIGNED: Updated configuration structure\n\n`;
-    if (extension === 'json') {
-      code = `{\n`;
-      code += `  "version": "2.0.0",\n`;
-      code += `  "realigned": true,\n`;
-      code += `  "settings": {\n`;
-      code += `    "feature1": true,\n`;
-      code += `    "feature2": false,\n`;
-      code += `    "syncedWithUpstream": true\n`;
-      code += `  },\n`;
-      code += `  "metadata": {\n`;
-      code += `    "lastRealignment": "${new Date().toISOString()}",\n`;
-      code += `    "patchedBy": "BobWatch AI"\n`;
-      code += `  }\n`;
-      code += `}\n`;
-    } else {
-      code += `const realignedConfig = {\n`;
-      code += `  version: '2.0.0',\n`;
-      code += `  realigned: true,\n`;
-      code += `  settings: {\n`;
-      code += `    feature1: true,\n`;
-      code += `    feature2: false,\n`;
-      code += `    syncedWithUpstream: true\n`;
-      code += `  }\n`;
-      code += `};\n\n`;
-      code += isTypeScript
-        ? `export default realignedConfig;\n`
-        : `module.exports = realignedConfig;\n`;
-    }
-  } else {
-    // Generic realignment
-    code += `// ✅ REALIGNED: Structural modifications synchronized\n\n`;
-    code += `// Updated to maintain compatibility with upstream changes\n`;
-    code += `const realignedModule = {\n`;
-    code += `  version: '2.0.0',\n`;
-    code += `  realigned: true,\n`;
-    code += `  \n`;
-    code += `  initialize() {\n`;
-    code += `    console.log('Module realigned and ready');\n`;
-    code += `  },\n`;
-    code += `  \n`;
-    code += `  process(input${isTypeScript ? ': any' : ''}) {\n`;
-    code += `    // Synchronized processing logic\n`;
-    code += `    return input;\n`;
-    code += `  }\n`;
-    code += `};\n\n`;
-    code += isTypeScript
-      ? `export default realignedModule;\n`
-      : `module.exports = realignedModule;\n`;
-  }
-  
-  return code;
-};
-
-=======
->>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
 export default function Results() {
   const router = useRouter();
   const [score, setScore] = useState(0);
@@ -336,14 +17,6 @@ export default function Results() {
   const [remediatingCards, setRemediatingCards] = useState(new Set());
   const [securedCards, setSecuredCards] = useState(new Set());
   const [scoreBoost, setScoreBoost] = useState(0);
-<<<<<<< HEAD
-  
-  // AI Agent & MCP Governance states
-  const [governanceStatus, setGovernanceStatus] = useState('CHECKING'); // CHECKING, FAULT, SECURED
-  const [mcpVulnerabilities, setMcpVulnerabilities] = useState([]);
-  const [remediatingGovernance, setRemediatingGovernance] = useState(false);
-=======
->>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
 
   // Handle card verification
   const handleVerifyCard = (cardId) => {
@@ -375,29 +48,6 @@ export default function Results() {
     }, 2000);
   };
 
-<<<<<<< HEAD
-  // Handle AI Agent & MCP Governance Auto-Fix
-  const handleGovernanceAutoFix = (vulnerability) => {
-    setRemediatingGovernance(true);
-    
-    // Simulate 2-second AI remediation processing
-    setTimeout(() => {
-      // Download the remediated MCP manifest
-      const filename = vulnerability.filename;
-      const remediatedCode = vulnerability.remediatedCode;
-      downloadFixedFile(filename, remediatedCode);
-      
-      // Update governance status to SECURED
-      setGovernanceStatus('SECURED');
-      setRemediatingGovernance(false);
-      
-      // Boost score by 10%
-      setScoreBoost(prev => prev + 10);
-    }, 2000);
-  };
-
-=======
->>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
   // Fetch data from sessionStorage
   useEffect(() => {
     const fetchData = async () => {
@@ -420,25 +70,6 @@ export default function Results() {
           
           setData(parsedData);
           setScore(parsedData.score);
-<<<<<<< HEAD
-          
-          // Detect MCP-specific vulnerabilities for governance monitoring
-          const mcpThreats = parsedData.risky?.filter(file =>
-            file.threatType?.includes('MCP BOUNDARY BREACH') ||
-            file.threatType?.includes('CONFUSED DEPUTY')
-          ) || [];
-          
-          setMcpVulnerabilities(mcpThreats);
-          
-          // Set governance status based on MCP threats
-          if (mcpThreats.length > 0) {
-            setGovernanceStatus('FAULT');
-          } else {
-            setGovernanceStatus('SECURED');
-          }
-          
-=======
->>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
           setIsLoading(false);
         } else {
           // No data available - show error
@@ -564,11 +195,7 @@ export default function Results() {
             Analysis Results
           </h1>
           
-<<<<<<< HEAD
-          <div className="grid gap-6 lg:grid-cols-4">
-=======
           <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-4">
->>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
             {/* Score Circle - Centralized */}
             <div className="bg-card rounded-2xl p-6 sm:p-8 border border-border shadow-xl">
               <h2 className="text-lg sm:text-xl font-semibold text-text mb-6 text-center">
@@ -793,115 +420,6 @@ export default function Results() {
               </div>
             </div>
 
-<<<<<<< HEAD
-            {/* AI Agent & MCP Governance Status Block */}
-            <div className="bg-[#0D1421] rounded-2xl p-6 sm:p-8 border border-[#1a2035] shadow-xl">
-              <h2 className="text-lg sm:text-xl font-semibold text-text mb-6 flex items-center gap-2">
-                <span>🤖</span>
-                <span>AI AGENT GOVERNANCE STATUS</span>
-              </h2>
-              
-              <div className="space-y-4">
-                {/* Governance Status Indicator */}
-                <div className="bg-background/30 rounded-lg p-4 border border-border">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-text/80 text-sm font-medium">MCP Infrastructure</span>
-                    {governanceStatus === 'CHECKING' && (
-                      <span className="text-blue-400 font-bold text-sm flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
-                        Scanning...
-                      </span>
-                    )}
-                    {governanceStatus === 'SECURED' && (
-                      <span className="text-green-400 font-bold text-sm flex items-center gap-2">
-                        <span>✅</span>
-                        SECURED
-                      </span>
-                    )}
-                    {governanceStatus === 'FAULT' && (
-                      <span className="text-orange-400 font-bold text-sm flex items-center gap-2 animate-pulse">
-                        <span>⚠️</span>
-                        COMPLIANCE FAULT
-                      </span>
-                    )}
-                  </div>
-                  
-                  {/* Dynamic Alert Banner for MCP Exploits */}
-                  {governanceStatus === 'FAULT' && mcpVulnerabilities.length > 0 && (
-                    <div className="mt-3 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg">
-                      <p className="text-orange-400 font-semibold text-sm mb-2">
-                        ⚠️ COMPLIANCE FAULT: OVER-PERMISSIONED AGENT RECOGNIZED
-                      </p>
-                      <p className="text-text/70 text-xs mb-3">
-                        Detected {mcpVulnerabilities.length} MCP infrastructure {mcpVulnerabilities.length === 1 ? 'vulnerability' : 'vulnerabilities'} with dangerous 'Auto-Approve' capabilities
-                      </p>
-                      
-                      {/* Vulnerability Details */}
-                      <div className="space-y-2 mb-3 max-h-32 overflow-y-auto custom-scrollbar">
-                        {mcpVulnerabilities.map((vuln, idx) => (
-                          <div key={idx} className="text-xs text-text/60 bg-background/50 p-2 rounded border border-border/50">
-                            <span className="font-mono text-orange-400">{vuln.filename}</span>
-                            <p className="mt-1">{vuln.threatType}</p>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      {/* Auto-Fix Button */}
-                      <button
-                        onClick={() => handleGovernanceAutoFix(mcpVulnerabilities[0])}
-                        disabled={remediatingGovernance}
-                        className={`w-full px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
-                          remediatingGovernance
-                            ? 'bg-accent/50 text-white/50 cursor-not-allowed'
-                            : 'bg-accent text-white hover:bg-accent/90 hover:shadow-lg'
-                        }`}
-                      >
-                        {remediatingGovernance ? (
-                          <span className="flex items-center justify-center gap-2">
-                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                            Securing Agent...
-                          </span>
-                        ) : (
-                          '⚡ Auto-Fix with BobWatch'
-                        )}
-                      </button>
-                    </div>
-                  )}
-                  
-                  {/* Secured State */}
-                  {governanceStatus === 'SECURED' && (
-                    <div className="mt-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-                      <p className="text-green-400 font-semibold text-sm flex items-center gap-2">
-                        <span>✅</span>
-                        All AI agents operating within approved boundaries
-                      </p>
-                      <p className="text-text/60 text-xs mt-1">
-                        No over-permissioned configurations detected
-                      </p>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Governance Metrics */}
-                <div className="bg-background/30 rounded-lg p-4 border border-border">
-                  <div className="flex items-center justify-between">
-                    <span className="text-text/80 text-sm font-medium">Shadow AI Detection</span>
-                    <span className="text-accent font-bold text-sm">
-                      {mcpVulnerabilities.length === 0 ? 'Clean' : `${mcpVulnerabilities.length} Found`}
-                    </span>
-                  </div>
-                </div>
-                
-                {/* Compliance Score */}
-                <div className="bg-background/30 rounded-lg p-4 border border-border">
-                  <div className="flex items-center justify-between">
-                    <span className="text-text/80 text-sm font-medium">Compliance Score</span>
-                    <span className={`font-bold text-sm ${
-                      governanceStatus === 'SECURED' ? 'text-green-400' : 'text-orange-400'
-                    }`}>
-                      {governanceStatus === 'SECURED' ? '100%' : `${Math.max(0, 100 - (mcpVulnerabilities.length * 25))}%`}
-                    </span>
-=======
             {/* AI Agent Governance Status */}
             <div className="bg-gradient-to-br from-card via-background to-card rounded-2xl p-6 sm:p-8 border border-red-500/40 shadow-xl">
               <h2 className="text-lg sm:text-xl font-semibold text-text mb-6 flex items-center gap-2">
@@ -965,7 +483,6 @@ export default function Results() {
                   <div className="flex items-center justify-between">
                     <span className="text-text/80 text-sm font-medium">Last Audit</span>
                     <span className="text-accent font-bold text-sm">2 minutes ago</span>
->>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
                   </div>
                 </div>
               </div>
@@ -1068,24 +585,9 @@ if (validate(userInput)) {
                             </div>
                           </div>
                           
-<<<<<<< HEAD
-                          <p className="text-text/60 text-xs italic mb-3">
-                            🛡️ BobWatch AI automatically patched this vulnerability using industry best practices
-                          </p>
-                          
-                          {/* Download Secure Patch Button */}
-                          <button
-                            onClick={() => downloadFixedFile(file.filename, generateSecureCode(file.filename, file.threatType))}
-                            className="w-full px-4 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg"
-                          >
-                            <span>📥</span>
-                            <span className="text-sm sm:text-base">Download Secure Patch</span>
-                          </button>
-=======
                           <p className="text-text/60 text-xs italic">
                             🛡️ BobWatch AI automatically patched this vulnerability using industry best practices
                           </p>
->>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
                         </div>
                       ) : (
                         /* Original Explanation */
@@ -1163,38 +665,6 @@ if (validate(userInput)) {
                         {file.explanation}
                       </p>
                       
-<<<<<<< HEAD
-                      {/* Verification and Download Section */}
-                      <div className="mt-4">
-                        {isVerified ? (
-                          <div className="space-y-3">
-                            {/* Verified Badge */}
-                            <div className="flex justify-end">
-                              <div className="flex items-center gap-1 px-3 py-1 bg-green-500/20 border border-green-500 rounded-md">
-                                <span className="text-green-400 font-bold">✓</span>
-                                <span className="text-green-400 text-xs font-medium">Verified</span>
-                              </div>
-                            </div>
-                            
-                            {/* Download Realignment Patch Button - Only appears after verification */}
-                            <button
-                              onClick={() => downloadFixedFile(file.filename, generateRealignedCode(file.filename, file.explanation))}
-                              className="w-full px-4 py-3 bg-yellow-600 text-white rounded-lg font-medium hover:bg-yellow-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg"
-                            >
-                              <span>📥</span>
-                              <span className="text-sm sm:text-base">Download Realignment Patch</span>
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex justify-end">
-                            <button
-                              onClick={() => handleVerifyCard(cardId)}
-                              className="px-3 py-1 text-xs bg-accent/10 border border-accent text-accent rounded-md hover:bg-accent hover:text-white transition-all duration-200"
-                            >
-                              Mark as Verified
-                            </button>
-                          </div>
-=======
                       {/* Verification Button/Badge */}
                       <div className="flex justify-end mt-4">
                         {isVerified ? (
@@ -1209,7 +679,6 @@ if (validate(userInput)) {
                           >
                             Mark as Verified
                           </button>
->>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
                         )}
                       </div>
                     </div>
@@ -1314,8 +783,6 @@ if (validate(userInput)) {
           }
         }
         
-<<<<<<< HEAD
-=======
         @keyframes pulse-warning {
           0%, 100% {
             opacity: 1;
@@ -1336,7 +803,6 @@ if (validate(userInput)) {
           }
         }
         
->>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
         .animate-pulse-red-glow {
           animation: pulse-red-glow 2s ease-in-out infinite;
         }
@@ -1344,8 +810,6 @@ if (validate(userInput)) {
         .animate-glow-button {
           animation: glow-button 2s ease-in-out infinite;
         }
-<<<<<<< HEAD
-=======
         
         .animate-pulse-warning {
           animation: pulse-warning 2s ease-in-out infinite;
@@ -1354,7 +818,6 @@ if (validate(userInput)) {
         .animate-pulse-text {
           animation: pulse-text 2s ease-in-out infinite;
         }
->>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
       `}</style>
     </main>
   );
