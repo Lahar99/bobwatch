@@ -66,10 +66,47 @@ export default function Home() {
       <header className="border-b border-border backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            {/* Logo with glowing blue dot */}
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-accent shadow-glow-blue"></div>
-              <span className="text-xl font-bold text-text">BobWatch</span>
+            {/* Premium Scanner Watch Logo */}
+            <div className="flex items-center gap-3 font-sans select-none">
+              {/* Scanner Watch Icon */}
+              <div className="relative w-9 h-9 border border-[#1a2035] bg-[#0D1421] rounded-lg flex items-center justify-center overflow-hidden shadow-inner">
+                {/* Radar Sweep Grid - Rotating Background */}
+                <div
+                  className="absolute inset-0 opacity-30"
+                  style={{
+                    background: 'linear-gradient(45deg, transparent 48%, rgba(79, 142, 247, 0.1) 49%, rgba(79, 142, 247, 0.1) 51%, transparent 52%), linear-gradient(-45deg, transparent 48%, rgba(79, 142, 247, 0.1) 49%, rgba(79, 142, 247, 0.1) 51%, transparent 52%)',
+                    backgroundSize: '8px 8px',
+                    animation: 'radar-sweep 8s linear infinite'
+                  }}
+                ></div>
+                
+                {/* Corner Brackets - Tech Aesthetic */}
+                <div className="absolute top-0.5 left-0.5 w-2 h-2 border-t-2 border-l-2 border-[#4F8EF7]/40"></div>
+                <div className="absolute top-0.5 right-0.5 w-2 h-2 border-t-2 border-r-2 border-[#4F8EF7]/40"></div>
+                <div className="absolute bottom-0.5 left-0.5 w-2 h-2 border-b-2 border-l-2 border-[#4F8EF7]/40"></div>
+                <div className="absolute bottom-0.5 right-0.5 w-2 h-2 border-b-2 border-r-2 border-[#4F8EF7]/40"></div>
+                
+                {/* Glowing Core Dot - Dual Layer */}
+                <div className="relative flex items-center justify-center">
+                  {/* Ping Animation Layer */}
+                  <div className="absolute w-2.5 h-2.5 bg-[#4F8EF7] rounded-full animate-[ping_2s_infinite_ease-in-out]"></div>
+                  {/* Solid Core with Glow */}
+                  <div className="relative w-2.5 h-2.5 bg-[#4F8EF7] rounded-full shadow-[0_0_6px_#4F8EF7]"></div>
+                </div>
+              </div>
+              
+              {/* Typography Layout */}
+              <div className="flex flex-col">
+                {/* Brand Name */}
+                <div className="flex items-center gap-0.5">
+                  <span className="text-xl font-bold font-mono text-white">Bob</span>
+                  <span className="text-xl font-bold font-mono text-[#4F8EF7]">Watch</span>
+                </div>
+                {/* Sub-tag */}
+                <div className="text-[10px] uppercase tracking-widest text-slate-500 -mt-0.5">
+                  AI Governance
+                </div>
+              </div>
             </div>
             
             {/* Demo Button */}
