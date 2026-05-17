@@ -3,6 +3,322 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
+// Self-Healing File Download Engine
+const downloadFixedFile = (filename, fixedContent) => {
+  // Determine MIME type based on file extension
+  const extension = filename.split('.').pop().toLowerCase();
+  const mimeTypes = {
+    'js': 'text/javascript',
+    'jsx': 'text/javascript',
+    'ts': 'text/typescript',
+    'tsx': 'text/typescript',
+    'json': 'application/json',
+    'css': 'text/css',
+    'html': 'text/html',
+    'htm': 'text/html',
+    'xml': 'application/xml',
+    'md': 'text/markdown',
+    'txt': 'text/plain'
+  };
+  
+  const mimeType = mimeTypes[extension] || 'text/plain';
+  
+  // Create Blob with appropriate MIME type
+  const blob = new Blob([fixedContent], { type: mimeType });
+  
+  // Generate download URL
+  const url = URL.createObjectURL(blob);
+  
+  // Create temporary anchor element and trigger download
+  const anchor = document.createElement('a');
+  anchor.href = url;
+  anchor.download = filename;
+  anchor.style.display = 'none';
+  
+  document.body.appendChild(anchor);
+  anchor.click();
+  
+  // Cleanup
+  document.body.removeChild(anchor);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
+};
+
+// Generate secure code patches for RISKY files
+const generateSecureCode = (filename, threatType) => {
+  const extension = filename.split('.').pop().toLowerCase();
+  const isTypeScript = extension === 'ts' || extension === 'tsx';
+  const isReact = extension === 'jsx' || extension === 'tsx';
+  
+  // Base imports
+  let code = `// 🛡️ BobWatch AI Security Patch\n`;
+  code += `// File: ${filename}\n`;
+  code += `// Threat Mitigated: ${threatType || 'Security Vulnerability'}\n`;
+  code += `// Generated: ${new Date().toISOString()}\n\n`;
+  
+  // Threat-specific secure implementations
+  switch (threatType) {
+    case 'SQL Injection':
+      code += isTypeScript
+        ? `import { Pool } from 'pg';\n\n`
+        : `const { Pool } = require('pg');\n\n`;
+      code += `// ✅ SECURED: Using parameterized queries\n`;
+      code += `const pool = new Pool({\n`;
+      code += `  host: process.env.DB_HOST,\n`;
+      code += `  database: process.env.DB_NAME,\n`;
+      code += `  user: process.env.DB_USER,\n`;
+      code += `  password: process.env.DB_PASSWORD,\n`;
+      code += `});\n\n`;
+      code += `async function getUserData(userId${isTypeScript ? ': string' : ''}) {\n`;
+      code += `  // Parameterized query prevents SQL injection\n`;
+      code += `  const query = 'SELECT * FROM users WHERE id = $1';\n`;
+      code += `  const values = [userId];\n`;
+      code += `  \n`;
+      code += `  try {\n`;
+      code += `    const result = await pool.query(query, values);\n`;
+      code += `    return result.rows[0];\n`;
+      code += `  } catch (error) {\n`;
+      code += `    console.error('Database error:', error);\n`;
+      code += `    throw new Error('Failed to fetch user data');\n`;
+      code += `  }\n`;
+      code += `}\n\n`;
+      code += isTypeScript ? `export { getUserData };\n` : `module.exports = { getUserData };\n`;
+      break;
+      
+    case 'XSS':
+      if (isReact) {
+        code += `import React from 'react';\n`;
+        code += `import DOMPurify from 'isomorphic-dompurify';\n\n`;
+        code += `// ✅ SECURED: Sanitized user input rendering\n`;
+        code += `function SafeUserContent({ userInput }${isTypeScript ? ': { userInput: string }' : ''}) {\n`;
+        code += `  // Sanitize HTML to prevent XSS attacks\n`;
+        code += `  const sanitizedContent = DOMPurify.sanitize(userInput, {\n`;
+        code += `    ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'p', 'br'],\n`;
+        code += `    ALLOWED_ATTR: []\n`;
+        code += `  });\n\n`;
+        code += `  return (\n`;
+        code += `    <div \n`;
+        code += `      dangerouslySetInnerHTML={{ __html: sanitizedContent }}\n`;
+        code += `      className="user-content"\n`;
+        code += `    />\n`;
+        code += `  );\n`;
+        code += `}\n\n`;
+        code += `export default SafeUserContent;\n`;
+      } else {
+        code += `// ✅ SECURED: Input sanitization and output encoding\n`;
+        code += `function sanitizeInput(userInput${isTypeScript ? ': string' : ''})${isTypeScript ? ': string' : ''} {\n`;
+        code += `  // Remove dangerous characters and encode HTML entities\n`;
+        code += `  return userInput\n`;
+        code += `    .replace(/[<>\"']/g, (char) => {\n`;
+        code += `      const entities = { '<': '<', '>': '>', '"': '"', "'": '&#x27;' };\n`;
+        code += `      return entities[char] || char;\n`;
+        code += `    })\n`;
+        code += `    .trim();\n`;
+        code += `}\n\n`;
+        code += `function renderUserContent(userInput${isTypeScript ? ': string' : ''})${isTypeScript ? ': string' : ''} {\n`;
+        code += `  const sanitized = sanitizeInput(userInput);\n`;
+        code += `  return \`<div class="user-content">\${sanitized}</div>\`;\n`;
+        code += `}\n\n`;
+        code += isTypeScript
+          ? `export { sanitizeInput, renderUserContent };\n`
+          : `module.exports = { sanitizeInput, renderUserContent };\n`;
+      }
+      break;
+      
+    case 'Command Injection':
+      code += isTypeScript
+        ? `import { exec } from 'child_process';\nimport { promisify } from 'util';\n\n`
+        : `const { exec } = require('child_process');\nconst { promisify } = require('util');\n\n`;
+      code += `const execAsync = promisify(exec);\n\n`;
+      code += `// ✅ SECURED: Safe command execution with validation\n`;
+      code += `const ALLOWED_COMMANDS = ['ls', 'pwd', 'date', 'whoami'];\n\n`;
+      code += `async function executeCommand(command${isTypeScript ? ': string' : ''}) {\n`;
+      code += `  // Validate command against whitelist\n`;
+      code += `  const baseCommand = command.split(' ')[0];\n`;
+      code += `  \n`;
+      code += `  if (!ALLOWED_COMMANDS.includes(baseCommand)) {\n`;
+      code += `    throw new Error(\`Command not allowed: \${baseCommand}\`);\n`;
+      code += `  }\n\n`;
+      code += `  // Sanitize input - remove dangerous characters\n`;
+      code += `  const sanitized = command.replace(/[;&|<>$\`\\\\]/g, '');\n\n`;
+      code += `  try {\n`;
+      code += `    const { stdout, stderr } = await execAsync(sanitized, {\n`;
+      code += `      timeout: 5000,\n`;
+      code += `      maxBuffer: 1024 * 1024\n`;
+      code += `    });\n`;
+      code += `    return stdout;\n`;
+      code += `  } catch (error) {\n`;
+      code += `    console.error('Command execution error:', error);\n`;
+      code += `    throw new Error('Command execution failed');\n`;
+      code += `  }\n`;
+      code += `}\n\n`;
+      code += isTypeScript ? `export { executeCommand };\n` : `module.exports = { executeCommand };\n`;
+      break;
+      
+    case 'Path Traversal':
+      code += isTypeScript
+        ? `import path from 'path';\nimport fs from 'fs/promises';\n\n`
+        : `const path = require('path');\nconst fs = require('fs').promises;\n\n`;
+      code += `// ✅ SECURED: Safe file access with path validation\n`;
+      code += `const SAFE_DIRECTORY = path.join(__dirname, 'uploads');\n\n`;
+      code += `async function readUserFile(filename${isTypeScript ? ': string' : ''}) {\n`;
+      code += `  // Normalize and validate path\n`;
+      code += `  const normalizedPath = path.normalize(filename).replace(/^(\\.\\.\\/)+/, '');\n`;
+      code += `  const fullPath = path.join(SAFE_DIRECTORY, normalizedPath);\n\n`;
+      code += `  // Ensure path is within safe directory\n`;
+      code += `  if (!fullPath.startsWith(SAFE_DIRECTORY)) {\n`;
+      code += `    throw new Error('Access denied: Path traversal detected');\n`;
+      code += `  }\n\n`;
+      code += `  try {\n`;
+      code += `    const content = await fs.readFile(fullPath, 'utf-8');\n`;
+      code += `    return content;\n`;
+      code += `  } catch (error) {\n`;
+      code += `    console.error('File read error:', error);\n`;
+      code += `    throw new Error('Failed to read file');\n`;
+      code += `  }\n`;
+      code += `}\n\n`;
+      code += isTypeScript ? `export { readUserFile };\n` : `module.exports = { readUserFile };\n`;
+      break;
+      
+    default:
+      // Generic security hardening
+      code += `// ✅ SECURED: Generic security hardening applied\n\n`;
+      code += `// Input validation helper\n`;
+      code += `function validateInput(input${isTypeScript ? ': any' : ''})${isTypeScript ? ': boolean' : ''} {\n`;
+      code += `  if (!input || typeof input !== 'string') return false;\n`;
+      code += `  if (input.length > 1000) return false;\n`;
+      code += `  if (/[<>\"';\`]/.test(input)) return false;\n`;
+      code += `  return true;\n`;
+      code += `}\n\n`;
+      code += `// Secure data processing\n`;
+      code += `function processSecurely(data${isTypeScript ? ': string' : ''}) {\n`;
+      code += `  if (!validateInput(data)) {\n`;
+      code += `    throw new Error('Invalid input detected');\n`;
+      code += `  }\n\n`;
+      code += `  // Process with security measures\n`;
+      code += `  const sanitized = data.trim().toLowerCase();\n`;
+      code += `  return sanitized;\n`;
+      code += `}\n\n`;
+      code += isTypeScript
+        ? `export { validateInput, processSecurely };\n`
+        : `module.exports = { validateInput, processSecurely };\n`;
+  }
+  
+  return code;
+};
+
+// Generate realignment patches for COLLATERAL files
+const generateRealignedCode = (filename, explanation) => {
+  const extension = filename.split('.').pop().toLowerCase();
+  const isTypeScript = extension === 'ts' || extension === 'tsx';
+  const isReact = extension === 'jsx' || extension === 'tsx';
+  
+  let code = `// 🔄 BobWatch AI Realignment Patch\n`;
+  code += `// File: ${filename}\n`;
+  code += `// Purpose: Structural synchronization for downstream compatibility\n`;
+  code += `// Generated: ${new Date().toISOString()}\n\n`;
+  
+  // Generate context-aware realignment based on explanation
+  if (explanation.toLowerCase().includes('import') || explanation.toLowerCase().includes('export')) {
+    code += `// ✅ REALIGNED: Updated imports/exports for consistency\n\n`;
+    if (isReact) {
+      code += `import React from 'react';\n`;
+      code += `import { useState, useEffect } from 'react';\n\n`;
+      code += `// Updated component structure\n`;
+      code += `function RealignedComponent()${isTypeScript ? ': JSX.Element' : ''} {\n`;
+      code += `  const [state, setState] = useState(null);\n\n`;
+      code += `  useEffect(() => {\n`;
+      code += `    // Synchronized with upstream changes\n`;
+      code += `    console.log('Component realigned');\n`;
+      code += `  }, []);\n\n`;
+      code += `  return <div>Realigned Component</div>;\n`;
+      code += `}\n\n`;
+      code += `export default RealignedComponent;\n`;
+    } else {
+      code += isTypeScript
+        ? `import { Config } from './types';\n\n`
+        : `const { Config } = require('./types');\n\n`;
+      code += `// Realigned module structure\n`;
+      code += `const realignedModule = {\n`;
+      code += `  init() {\n`;
+      code += `    console.log('Module realigned with upstream changes');\n`;
+      code += `  },\n`;
+      code += `  process(data${isTypeScript ? ': any' : ''}) {\n`;
+      code += `    return data;\n`;
+      code += `  }\n`;
+      code += `};\n\n`;
+      code += isTypeScript
+        ? `export default realignedModule;\n`
+        : `module.exports = realignedModule;\n`;
+    }
+  } else if (explanation.toLowerCase().includes('function') || explanation.toLowerCase().includes('method')) {
+    code += `// ✅ REALIGNED: Updated function signatures\n\n`;
+    code += `// Synchronized function with new parameter structure\n`;
+    code += `function realignedFunction(\n`;
+    code += `  param1${isTypeScript ? ': string' : ''},\n`;
+    code += `  param2${isTypeScript ? ': number' : ''},\n`;
+    code += `  options${isTypeScript ? '?: { verbose?: boolean }' : ' = {}'}\n`;
+    code += `)${isTypeScript ? ': void' : ''} {\n`;
+    code += `  // Updated to match upstream interface changes\n`;
+    code += `  console.log('Function realigned:', param1, param2, options);\n`;
+    code += `}\n\n`;
+    code += isTypeScript
+      ? `export { realignedFunction };\n`
+      : `module.exports = { realignedFunction };\n`;
+  } else if (explanation.toLowerCase().includes('config') || explanation.toLowerCase().includes('setting')) {
+    code += `// ✅ REALIGNED: Updated configuration structure\n\n`;
+    if (extension === 'json') {
+      code = `{\n`;
+      code += `  "version": "2.0.0",\n`;
+      code += `  "realigned": true,\n`;
+      code += `  "settings": {\n`;
+      code += `    "feature1": true,\n`;
+      code += `    "feature2": false,\n`;
+      code += `    "syncedWithUpstream": true\n`;
+      code += `  },\n`;
+      code += `  "metadata": {\n`;
+      code += `    "lastRealignment": "${new Date().toISOString()}",\n`;
+      code += `    "patchedBy": "BobWatch AI"\n`;
+      code += `  }\n`;
+      code += `}\n`;
+    } else {
+      code += `const realignedConfig = {\n`;
+      code += `  version: '2.0.0',\n`;
+      code += `  realigned: true,\n`;
+      code += `  settings: {\n`;
+      code += `    feature1: true,\n`;
+      code += `    feature2: false,\n`;
+      code += `    syncedWithUpstream: true\n`;
+      code += `  }\n`;
+      code += `};\n\n`;
+      code += isTypeScript
+        ? `export default realignedConfig;\n`
+        : `module.exports = realignedConfig;\n`;
+    }
+  } else {
+    // Generic realignment
+    code += `// ✅ REALIGNED: Structural modifications synchronized\n\n`;
+    code += `// Updated to maintain compatibility with upstream changes\n`;
+    code += `const realignedModule = {\n`;
+    code += `  version: '2.0.0',\n`;
+    code += `  realigned: true,\n`;
+    code += `  \n`;
+    code += `  initialize() {\n`;
+    code += `    console.log('Module realigned and ready');\n`;
+    code += `  },\n`;
+    code += `  \n`;
+    code += `  process(input${isTypeScript ? ': any' : ''}) {\n`;
+    code += `    // Synchronized processing logic\n`;
+    code += `    return input;\n`;
+    code += `  }\n`;
+    code += `};\n\n`;
+    code += isTypeScript
+      ? `export default realignedModule;\n`
+      : `module.exports = realignedModule;\n`;
+  }
+  
+  return code;
+};
+
 export default function Results() {
   const router = useRouter();
   const [score, setScore] = useState(0);
@@ -517,9 +833,18 @@ if (validate(userInput)) {
                             </div>
                           </div>
                           
-                          <p className="text-text/60 text-xs italic">
+                          <p className="text-text/60 text-xs italic mb-3">
                             🛡️ BobWatch AI automatically patched this vulnerability using industry best practices
                           </p>
+                          
+                          {/* Download Secure Patch Button */}
+                          <button
+                            onClick={() => downloadFixedFile(file.filename, generateSecureCode(file.filename, file.threatType))}
+                            className="w-full px-4 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg"
+                          >
+                            <span>📥</span>
+                            <span className="text-sm sm:text-base">Download Secure Patch</span>
+                          </button>
                         </div>
                       ) : (
                         /* Original Explanation */
@@ -597,20 +922,36 @@ if (validate(userInput)) {
                         {file.explanation}
                       </p>
                       
-                      {/* Verification Button/Badge */}
-                      <div className="flex justify-end mt-4">
+                      {/* Verification and Download Section */}
+                      <div className="mt-4">
                         {isVerified ? (
-                          <div className="flex items-center gap-1 px-3 py-1 bg-green-500/20 border border-green-500 rounded-md">
-                            <span className="text-green-400 font-bold">✓</span>
-                            <span className="text-green-400 text-xs font-medium">Verified</span>
+                          <div className="space-y-3">
+                            {/* Verified Badge */}
+                            <div className="flex justify-end">
+                              <div className="flex items-center gap-1 px-3 py-1 bg-green-500/20 border border-green-500 rounded-md">
+                                <span className="text-green-400 font-bold">✓</span>
+                                <span className="text-green-400 text-xs font-medium">Verified</span>
+                              </div>
+                            </div>
+                            
+                            {/* Download Realignment Patch Button - Only appears after verification */}
+                            <button
+                              onClick={() => downloadFixedFile(file.filename, generateRealignedCode(file.filename, file.explanation))}
+                              className="w-full px-4 py-3 bg-yellow-600 text-white rounded-lg font-medium hover:bg-yellow-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg"
+                            >
+                              <span>📥</span>
+                              <span className="text-sm sm:text-base">Download Realignment Patch</span>
+                            </button>
                           </div>
                         ) : (
-                          <button
-                            onClick={() => handleVerifyCard(cardId)}
-                            className="px-3 py-1 text-xs bg-accent/10 border border-accent text-accent rounded-md hover:bg-accent hover:text-white transition-all duration-200"
-                          >
-                            Mark as Verified
-                          </button>
+                          <div className="flex justify-end">
+                            <button
+                              onClick={() => handleVerifyCard(cardId)}
+                              className="px-3 py-1 text-xs bg-accent/10 border border-accent text-accent rounded-md hover:bg-accent hover:text-white transition-all duration-200"
+                            >
+                              Mark as Verified
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>

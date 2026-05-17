@@ -9,6 +9,11 @@ export default function Home() {
   const [instructions, setInstructions] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const handleDemoClick = () => {
+    setRepoUrl('https://github.com/ch1n-may/demo-ecommerce-app/pull/1');
+    setInstructions('Add comments to page.js');
+  };
+
   const handleAnalyze = async () => {
     if (!repoUrl || !instructions) {
       return;
@@ -68,7 +73,10 @@ export default function Home() {
             </div>
             
             {/* Demo Button */}
-            <button className="px-6 py-2 border-2 border-accent text-accent rounded-lg hover:bg-accent hover:text-white transition-all duration-200 font-medium">
+            <button
+              onClick={handleDemoClick}
+              className="px-6 py-2 border-2 border-accent text-accent rounded-lg hover:bg-accent hover:text-white transition-all duration-200 font-medium"
+            >
               See Live Demo
             </button>
           </div>
