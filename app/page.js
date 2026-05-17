@@ -10,29 +10,43 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleAnalyze = async () => {
+<<<<<<< HEAD
     // Detect if input contains session text (multi-line or very long)
     const isSessionText = repoUrl.includes('\n') || repoUrl.length > 500;
     
     // Validate: either session text OR (URL + instructions)
     if (!repoUrl || (!isSessionText && !instructions)) {
+=======
+    if (!repoUrl || !instructions) {
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
       return;
     }
 
     setIsLoading(true);
 
     try {
+<<<<<<< HEAD
       // Build payload based on input type
       const payload = isSessionText
         ? { rawSessionText: repoUrl }
         : { githubUrl: repoUrl, userIntent: instructions };
 
+=======
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
       // Call the analyze API
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+<<<<<<< HEAD
         body: JSON.stringify(payload)
+=======
+        body: JSON.stringify({
+          githubUrl: repoUrl,
+          userIntent: instructions
+        })
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
       });
 
       const result = await response.json();
@@ -67,6 +81,7 @@ export default function Home() {
       <header className="border-b border-border backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+<<<<<<< HEAD
             {/* Premium Scanner Watch Logo */}
             <div className="flex items-center gap-3 font-sans select-none">
               {/* Scanner Watch Icon */}
@@ -109,6 +124,18 @@ export default function Home() {
                 </div>
               </div>
             </div>
+=======
+            {/* Logo with glowing blue dot */}
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 rounded-full bg-accent shadow-glow-blue"></div>
+              <span className="text-xl font-bold text-text">BobWatch</span>
+            </div>
+            
+            {/* Demo Button */}
+            <button className="px-6 py-2 border-2 border-accent text-accent rounded-lg hover:bg-accent hover:text-white transition-all duration-200 font-medium">
+              See Live Demo
+            </button>
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
           </div>
         </div>
       </header>
@@ -126,6 +153,7 @@ export default function Home() {
           {/* Input Block */}
           <div className="max-w-2xl mx-auto">
             <div className="bg-card rounded-2xl p-6 sm:p-8 border border-border shadow-xl">
+<<<<<<< HEAD
               {/* GitHub Repo URL or Session Text Input */}
               <div className="mb-6">
                 <label htmlFor="repo-url" className="block text-text text-sm font-medium mb-3 text-left">
@@ -145,6 +173,27 @@ export default function Home() {
               <div className="mb-8">
                 <label htmlFor="instructions" className="block text-text text-sm font-medium mb-3 text-left">
                   What did you tell Bob to do? {(repoUrl.includes('\n') || repoUrl.length > 500) && <span className="text-text/50 text-xs">(optional for session imports)</span>}
+=======
+              {/* GitHub Repo URL Input */}
+              <div className="mb-6">
+                <label htmlFor="repo-url" className="block text-text text-sm font-medium mb-3 text-left">
+                  GitHub Repo URL
+                </label>
+                <input
+                  id="repo-url"
+                  type="text"
+                  value={repoUrl}
+                  onChange={(e) => setRepoUrl(e.target.value)}
+                  placeholder="https://github.com/username/repository"
+                  className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text placeholder-text/40 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
+                />
+              </div>
+
+              {/* Intent Input */}
+              <div className="mb-8">
+                <label htmlFor="instructions" className="block text-text text-sm font-medium mb-3 text-left">
+                  What did you tell Bob to do?
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
                 </label>
                 <input
                   id="instructions"

@@ -35,10 +35,13 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+<<<<<<< HEAD
 # bobwatch wrapper
 .bobwatch/backups/
 .bobwatch/audit.log
 .bobwatch/audit.log.*
 *.backup
 
+=======
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
 # Made with Bob

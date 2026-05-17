@@ -41,6 +41,7 @@ body {
   background: rgba(79, 142, 247, 0.8);
 }
 
+<<<<<<< HEAD
 /* Radar Sweep Animation for Logo */
 @keyframes radar-sweep {
   0% {
@@ -56,4 +57,6 @@ body {
   }
 }
 
+=======
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
 /* Made with Bob */

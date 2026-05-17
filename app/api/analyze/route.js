@@ -102,16 +102,25 @@ function generatePresentationData(userIntent, prData) {
     );
   }
   
+<<<<<<< HEAD
   // RISKY FILES - Security concerns with remediatedCode (including MCP-specific threats)
   riskyFiles.push(
     {
       filename: 'src/config/database.js',
       threatType: '🚨 THREAT TYPE: RESOURCE EXHAUSTION / CRITICAL',
+=======
+  // RISKY FILES - Security concerns with remediatedCode
+  riskyFiles.push(
+    {
+      filename: 'src/config/database.js',
+      threatType: 'RESOURCE EXHAUSTION / CRITICAL',
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
       explanation: `Modified database connection pooling settings without updating timeout configurations. Could cause connection exhaustion under high load, leading to service degradation.`,
       remediatedCode: `// Secure database configuration with proper pooling\nconst pool = {\n  max: 20,\n  min: 5,\n  idle: 10000,\n  acquire: 30000,\n  evict: 1000\n};\n\nmodule.exports = { pool };`
     },
     {
       filename: 'src/middleware/auth.js',
+<<<<<<< HEAD
       threatType: '🚨 THREAT TYPE: AUTH BYPASS',
       explanation: `Changed authentication token validation logic. The new implementation skips signature verification in certain edge cases, creating a potential authentication bypass vulnerability.`,
       remediatedCode: `// Secure token validation\nfunction validateToken(token) {\n  if (!token) return false;\n  try {\n    const decoded = jwt.verify(token, SECRET_KEY);\n    return decoded && decoded.exp > Date.now();\n  } catch (err) {\n    return false;\n  }\n}`
@@ -133,6 +142,11 @@ function generatePresentationData(userIntent, prData) {
       threatType: '🚨 THREAT TYPE: CONFUSED DEPUTY / PRIVILEGE ESCALATION',
       explanation: `OpenAPI client allows AI agent to invoke arbitrary endpoints with admin-level authentication token hardcoded in the source. An indirect prompt injection (e.g., via a malicious API response) could trick the agent into calling privileged endpoints like DELETE /users/all or POST /admin/execute-command.`,
       remediatedCode: `// Secure OpenAPI client with capability-based access control\nclass SecureAPIClient {\n  constructor(config) {\n    this.allowedOperations = config.allowedOperations || [];\n    this.token = process.env.API_TOKEN; // Never hardcode tokens\n  }\n  \n  async invoke(operation, params) {\n    // Validate operation against allowlist\n    if (!this.allowedOperations.includes(operation)) {\n      throw new Error(\`Operation \${operation} not permitted\`);\n    }\n    \n    // Validate parameters against schema\n    this.validateParams(operation, params);\n    \n    // Use least-privilege token for this specific operation\n    const scopedToken = await this.getScopedToken(operation);\n    \n    return this.executeWithLimits(operation, params, scopedToken);\n  }\n  \n  validateParams(operation, params) {\n    const schema = this.getOperationSchema(operation);\n    if (!schema.validate(params)) {\n      throw new Error('Invalid parameters');\n    }\n  }\n}`
+=======
+      threatType: 'PROMPT INJECTION / AUTH BYPASS',
+      explanation: `Changed authentication token validation logic. The new implementation skips signature verification in certain edge cases, creating a potential authentication bypass vulnerability.`,
+      remediatedCode: `// Secure token validation\nfunction validateToken(token) {\n  if (!token) return false;\n  try {\n    const decoded = jwt.verify(token, SECRET_KEY);\n    return decoded && decoded.exp > Date.now();\n  } catch (err) {\n    return false;\n  }\n}`
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
     }
   );
   
@@ -152,7 +166,18 @@ function generatePresentationData(userIntent, prData) {
     }
   );
   
+<<<<<<< HEAD
   return {
+=======
+  // Calculate score based on file counts
+  let score = 100;
+  score -= (riskyFiles.length * 20); // Each risky file reduces score by 20
+  score -= (collateralFiles.length * 5); // Each collateral file reduces score by 5
+  score = Math.max(0, Math.min(100, score)); // Clamp between 0-100
+  
+  return {
+    score: score,
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
     risky: riskyFiles,
     collateral: collateralFiles,
     intended: primaryFiles
@@ -177,6 +202,7 @@ Analyze this code diff against the developer's stated intent. Classify ALL code 
 3. **RISKY** - Changes that introduce security vulnerabilities, prompt injections, exposed secrets, authentication bypasses, or dangerous deviations from intent
 
 CRITICAL REQUIREMENTS:
+<<<<<<< HEAD
 - For RISKY items: Identify the specific threat type (see THREAT TAXONOMY below)
 - For RISKY items: Generate clean, secure "remediatedCode" that fixes the vulnerability while maintaining functionality
 - Provide an overall "score" out of 100 based on intent alignment (100 = perfect match, 0 = complete drift)
@@ -213,6 +239,14 @@ THREAT TAXONOMY (Use these EXACT labels for threatType):
 - 🚨 THREAT TYPE: RESOURCE EXHAUSTION / CRITICAL - DoS/performance degradation
 - 🚨 THREAT TYPE: PATH TRAVERSAL - Unrestricted file system access
 - 🚨 THREAT TYPE: COMMAND INJECTION - OS command execution vulnerability
+=======
+- MUST provide a "score" field as an integer between 1 and 100 (REQUIRED, NEVER null or 0 unless truly no alignment)
+- Score calculation: Start at 100, subtract 20 points per RISKY file, subtract 5 points per COLLATERAL file
+- For RISKY items: Identify the specific threat type (e.g., "PROMPT INJECTION", "SQL INJECTION", "AUTH BYPASS", "EXPOSED SECRETS", "XSS VULNERABILITY", "RESOURCE EXHAUSTION")
+- For RISKY items: Generate clean, secure "remediatedCode" that fixes the vulnerability while maintaining functionality
+- Be thorough but concise in explanations
+- ALL arrays (risky, collateral, intended) must be present, use empty arrays [] if no items
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
 
 OUTPUT FORMAT (STRICT JSON ONLY - NO MARKDOWN, NO EXPLANATIONS):
 {
@@ -220,6 +254,7 @@ OUTPUT FORMAT (STRICT JSON ONLY - NO MARKDOWN, NO EXPLANATIONS):
   "risky": [
     {
       "filename": "path/to/file.js",
+<<<<<<< HEAD
       "threatType": "🚨 THREAT TYPE: MCP BOUNDARY BREACH",
       "explanation": "Specific security risk with technical details explaining how instruction boundary is violated",
       "remediatedCode": "// Secure implementation with proper sanitization\\nfunction secureParser(input) {\\n  const sanitized = sanitizeInput(input);\\n  return processData(sanitized);\\n}"
@@ -308,6 +343,11 @@ OUTPUT FORMAT (STRICT JSON ONLY - NO MARKDOWN, NO EXPLANATIONS):
       "threatType": "🚨 THREAT TYPE: CONFUSED DEPUTY / PRIVILEGE ESCALATION",
       "explanation": "Specific security risk with technical details explaining privilege abuse vector",
       "remediatedCode": "// Secure implementation with least-privilege access\\nfunction restrictedOperation(params) {\\n  validatePermissions(params);\\n  return executeWithLimits(params);\\n}"
+=======
+      "threatType": "PROMPT INJECTION / CRITICAL",
+      "explanation": "Specific security risk with technical details",
+      "remediatedCode": "// Fixed code block that resolves the vulnerability\\nfunction secureImplementation() {\\n  // Safe implementation\\n}"
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
     }
   ],
   "collateral": [
@@ -329,6 +369,7 @@ RESPOND WITH ONLY THE JSON OBJECT. NO ADDITIONAL TEXT.`.trim();
 
 // Helper function to calculate TRD score (with AI override support)
 function calculateTRDScore(aiResponse) {
+<<<<<<< HEAD
   // If AI provided a score, use it (with validation)
   if (aiResponse.score !== undefined && typeof aiResponse.score === 'number') {
     return Math.max(0, Math.min(100, Math.round(aiResponse.score)));
@@ -340,6 +381,35 @@ function calculateTRDScore(aiResponse) {
   score -= (risky.length * 20);
   score -= (collateral.length * 5);
   return Math.max(0, Math.min(100, score));
+=======
+  // Ensure arrays exist with defaults
+  const risky = Array.isArray(aiResponse.risky) ? aiResponse.risky : [];
+  const collateral = Array.isArray(aiResponse.collateral) ? aiResponse.collateral : [];
+  const intended = Array.isArray(aiResponse.intended) ? aiResponse.intended : [];
+  
+  // If AI provided a valid score, use it (with validation)
+  if (aiResponse.score !== undefined &&
+      aiResponse.score !== null &&
+      typeof aiResponse.score === 'number' &&
+      aiResponse.score > 0) {
+    return Math.max(1, Math.min(100, Math.round(aiResponse.score)));
+  }
+  
+  // Fallback calculation if AI didn't provide valid score
+  let score = 100;
+  score -= (risky.length * 20); // Each risky file: -20 points
+  score -= (collateral.length * 5); // Each collateral file: -5 points
+  
+  // Ensure score is never 0 unless there are critical issues
+  score = Math.max(1, Math.min(100, score));
+  
+  // If we have intended files but score is still low, boost it slightly
+  if (intended.length > 0 && score < 30) {
+    score = Math.min(score + (intended.length * 5), 50);
+  }
+  
+  return Math.round(score);
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
 }
 
 export async function POST(request) {
@@ -359,6 +429,7 @@ export async function POST(request) {
 
     // Parse request body
     const body = await request.json();
+<<<<<<< HEAD
     const { githubUrl, userIntent, rawSessionText } = body;
     
     // Validate input - either rawSessionText OR (githubUrl + userIntent)
@@ -367,12 +438,23 @@ export async function POST(request) {
         {
           status: 'error',
           message: 'Provide either rawSessionText or (githubUrl + userIntent)',
+=======
+    const { githubUrl, userIntent } = body;
+    
+    // Validate input
+    if (!githubUrl || !userIntent) {
+      return NextResponse.json(
+        { 
+          status: 'error', 
+          message: 'Missing required fields: githubUrl and userIntent',
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
           code: 'MISSING_FIELDS'
         },
         { status: 400 }
       );
     }
 
+<<<<<<< HEAD
     // PRESENTATION MODE CHECK: Skip live network fetches if enabled
     let aiResponse;
     
@@ -482,6 +564,34 @@ export async function POST(request) {
         // Add small delay to simulate processing
         await new Promise(resolve => setTimeout(resolve, 800));
       } else {
+=======
+    // Parse PR URL
+    const prData = parsePRUrl(githubUrl);
+    if (!prData) {
+      return NextResponse.json(
+        { 
+          status: 'error', 
+          message: 'Invalid GitHub PR URL. Expected format: https://github.com/owner/repo/pull/123',
+          code: 'INVALID_URL'
+        },
+        { status: 400 }
+      );
+    }
+
+    const { owner, repo, pullNumber } = prData;
+
+    // PRESENTATION MODE CHECK: Skip live network fetches if enabled
+    let aiResponse;
+    
+    if (PRESENTATION_MODE) {
+      // Generate contextual presentation data
+      console.log('🎭 PRESENTATION MODE: Generating mock analysis data');
+      aiResponse = generatePresentationData(userIntent, prData);
+      
+      // Add small delay to simulate processing
+      await new Promise(resolve => setTimeout(resolve, 800));
+    } else {
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
       // PRODUCTION MODE: Fetch unified diff from GitHub and analyze with Gemini
       console.log('🔍 PRODUCTION MODE: Fetching unified diff from GitHub API');
       
@@ -568,20 +678,50 @@ export async function POST(request) {
         console.warn('⚠️ Falling back to presentation mode');
         aiResponse = generatePresentationData(userIntent, prData);
       }
+<<<<<<< HEAD
       }
     }
 
     // Calculate TRD score (preserving exact scoring mathematics)
     const score = calculateTRDScore(aiResponse);
+=======
+    }
+
+    // Ensure arrays exist with proper defaults
+    const risky = Array.isArray(aiResponse.risky) ? aiResponse.risky : [];
+    const collateral = Array.isArray(aiResponse.collateral) ? aiResponse.collateral : [];
+    const intended = Array.isArray(aiResponse.intended) ? aiResponse.intended : [];
+    
+    // Calculate TRD score (preserving exact scoring mathematics)
+    const score = calculateTRDScore({
+      score: aiResponse.score,
+      risky,
+      collateral,
+      intended
+    });
+    
+    // Validate score is never 0 or null
+    const validatedScore = (score && score > 0) ? score : 50; // Default to 50 if invalid
+
+    console.log(`✅ Final validated score: ${validatedScore}`);
+    console.log(`📊 Files breakdown - Risky: ${risky.length}, Collateral: ${collateral.length}, Intended: ${intended.length}`);
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
 
     // Return response preserving exact frontend state configurations and sessionStorage keys
     return NextResponse.json({
       status: 'success',
       data: {
+<<<<<<< HEAD
         score,
         risky: aiResponse.risky,
         collateral: aiResponse.collateral,
         intended: aiResponse.intended
+=======
+        score: validatedScore,
+        risky,
+        collateral,
+        intended
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
       }
     });
 

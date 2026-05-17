@@ -1,7 +1,11 @@
 # BobWatch Gemini Integration - Plan Summary
 
 ## 🎯 Goal
+<<<<<<< HEAD
 Integrate Google Gemini 2.5 Flash AI to analyze GitHub Pull Request changes against user intent with real AI-powered analysis.
+=======
+Integrate Google Gemini 2.5 Flash AI to analyze GitHub Pull Request changes against user intent, replacing the mock `/api/demo` endpoint with real AI-powered analysis.
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
 
 ---
 
@@ -9,10 +13,22 @@ Integrate Google Gemini 2.5 Flash AI to analyze GitHub Pull Request changes agai
 
 ### Current State
 - ✅ Frontend UI complete ([`app/page.js`](app/page.js), [`app/results/page.js`](app/results/page.js))
+<<<<<<< HEAD
 - ✅ Real Gemini 2.5 Flash integration
 - ✅ GitHub PR diff fetching
 - ✅ Security-focused AI analysis
 - ✅ Dashboard displays real AI analysis data
+=======
+- ✅ Mock API endpoint working ([`/api/demo`](app/api/demo/route.js))
+- ✅ Dashboard displays mock data beautifully
+- ❌ No real AI analysis yet
+
+### Target State
+- ✅ Real Gemini 2.5 Flash integration
+- ✅ GitHub PR diff fetching
+- ✅ Security-focused AI analysis
+- ✅ Same beautiful dashboard, real data
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
 
 ---
 
@@ -31,7 +47,11 @@ Gemini 2.5 Flash API
     ↓
 Parse Response → Calculate TRD Score
     ↓
+<<<<<<< HEAD
 Return JSON with analysis results
+=======
+Return JSON (same format as /api/demo)
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
     ↓
 Display Results (app/results/page.js)
 ```
@@ -89,14 +109,24 @@ router.push('/results');
 ```
 
 ### 4. **Update [`app/results/page.js`](app/results/page.js)** (MINOR CHANGES)
+<<<<<<< HEAD
 **Current:** Reads from sessionStorage
 **Implementation:** Displays analysis results from sessionStorage
+=======
+**Current:** Always fetches from `/api/demo`  
+**New:** Check sessionStorage first, fallback to demo
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
 ```javascript
 useEffect(() => {
   const storedData = sessionStorage.getItem('analysisResult');
   if (storedData) {
     setData(JSON.parse(storedData));
     sessionStorage.removeItem('analysisResult');
+<<<<<<< HEAD
+=======
+  } else {
+    fetchData(); // Fallback to demo API
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
   }
 }, []);
 ```
@@ -289,6 +319,7 @@ GITHUB_TOKEN=optional_for_higher_rate_limits
 
 ## 🎉 Expected Outcome
 
+<<<<<<< HEAD
 ### Implementation Complete
 - ✅ Real AI-powered analysis
 - ✅ GitHub PR integration
@@ -296,6 +327,20 @@ GITHUB_TOKEN=optional_for_higher_rate_limits
 - ✅ Professional security insights
 
 **The dashboard displays real-time AI analysis of GitHub Pull Requests!**
+=======
+### Before
+- Mock data from `/api/demo`
+- No real analysis
+- Static results
+
+### After
+- Real AI-powered analysis
+- GitHub PR integration
+- Dynamic, accurate results
+- Professional security insights
+
+**The dashboard will look exactly the same, but with REAL AI analysis!**
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
 
 ---
 

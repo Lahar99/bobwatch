@@ -1,5 +1,10 @@
 # BobWatch
 
+<<<<<<< HEAD
+=======
+**Live Demo:** [https://bobwatch.vercel.app/](https://bobwatch.vercel.app/)
+
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
 BobWatch was built entirely using IBM Bob at the IBM Bob Hackathon 2026. It is the safety layer every Bob user needs.
 
 ## 🎯 Tagline

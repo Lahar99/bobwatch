@@ -171,7 +171,11 @@ score += (collateral.length * collateralWeight);
 score = Math.max(0, Math.min(100, score)); // Clamp between 0-100
 ```
 
+<<<<<<< HEAD
 #### Response Format
+=======
+#### Response Format (matches `/api/demo`)
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
 ```json
 {
   "status": "success",
@@ -189,7 +193,12 @@ score = Math.max(0, Math.min(100, score)); // Clamp between 0-100
 ### 6. Frontend Integration
 
 #### Update `app/page.js`
+<<<<<<< HEAD
 **Implementation:**
+=======
+**Changes:**
+- Replace mock navigation with actual API call
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
 - POST to `/api/analyze` with `{ githubUrl, userIntent }`
 - Store response in sessionStorage
 - Navigate to `/results` after successful response
@@ -219,9 +228,15 @@ const handleAnalyze = async () => {
 ```
 
 #### Update `app/results/page.js`
+<<<<<<< HEAD
 **Implementation:**
 - Read analysis results from sessionStorage
 - Display the AI-powered analysis
+=======
+**Changes:**
+- Check sessionStorage first before calling `/api/demo`
+- Fallback to demo API if no stored data
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
 
 ```javascript
 useEffect(() => {
@@ -229,6 +244,12 @@ useEffect(() => {
   if (storedData) {
     setData(JSON.parse(storedData));
     sessionStorage.removeItem('analysisResult');
+<<<<<<< HEAD
+=======
+  } else {
+    // Fallback to demo API
+    fetchData();
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
   }
 }, []);
 ```
@@ -331,7 +352,11 @@ Users will:
 5. Get a Trust Reality Delta (TRD) score
 6. View detailed explanations for each file
 
+<<<<<<< HEAD
 **The dashboard displays real AI analysis results!**
+=======
+**The dashboard will work exactly as it does now with `/api/demo`, but with real AI analysis!**
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
 
 ---
 
@@ -341,4 +366,8 @@ Users will:
 - JSON mode ensures structured responses
 - GitHub API is public and doesn't require authentication for public repos
 - Session storage prevents data loss on page refresh
+<<<<<<< HEAD
 - Real-time AI analysis provides accurate security insights
+=======
+- Fallback to demo API ensures the app always works
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09

@@ -6,10 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "watch": "node scripts/bobwatch-wrapper.js",
-    "watch:dev": "concurrently \"npm run dev\" \"npm run watch\"",
-    "watch:stop": "pkill -f bobwatch-wrapper || taskkill /F /IM node.exe /FI \"WINDOWTITLE eq BobWatch*\""
+    "lint": "next lint"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
+<<<<<<< HEAD
 // Self-Healing File Download Engine
 const downloadFixedFile = (filename, fixedContent) => {
   // Determine MIME type based on file extension
@@ -319,6 +320,8 @@ const generateRealignedCode = (filename, explanation) => {
   return code;
 };
 
+=======
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
 export default function Results() {
   const router = useRouter();
   const [score, setScore] = useState(0);
@@ -333,11 +336,14 @@ export default function Results() {
   const [remediatingCards, setRemediatingCards] = useState(new Set());
   const [securedCards, setSecuredCards] = useState(new Set());
   const [scoreBoost, setScoreBoost] = useState(0);
+<<<<<<< HEAD
   
   // AI Agent & MCP Governance states
   const [governanceStatus, setGovernanceStatus] = useState('CHECKING'); // CHECKING, FAULT, SECURED
   const [mcpVulnerabilities, setMcpVulnerabilities] = useState([]);
   const [remediatingGovernance, setRemediatingGovernance] = useState(false);
+=======
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
 
   // Handle card verification
   const handleVerifyCard = (cardId) => {
@@ -369,6 +375,7 @@ export default function Results() {
     }, 2000);
   };
 
+<<<<<<< HEAD
   // Handle AI Agent & MCP Governance Auto-Fix
   const handleGovernanceAutoFix = (vulnerability) => {
     setRemediatingGovernance(true);
@@ -389,6 +396,8 @@ export default function Results() {
     }, 2000);
   };
 
+=======
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
   // Fetch data from sessionStorage
   useEffect(() => {
     const fetchData = async () => {
@@ -411,6 +420,7 @@ export default function Results() {
           
           setData(parsedData);
           setScore(parsedData.score);
+<<<<<<< HEAD
           
           // Detect MCP-specific vulnerabilities for governance monitoring
           const mcpThreats = parsedData.risky?.filter(file =>
@@ -427,6 +437,8 @@ export default function Results() {
             setGovernanceStatus('SECURED');
           }
           
+=======
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
           setIsLoading(false);
         } else {
           // No data available - show error
@@ -552,7 +564,11 @@ export default function Results() {
             Analysis Results
           </h1>
           
+<<<<<<< HEAD
           <div className="grid gap-6 lg:grid-cols-4">
+=======
+          <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-4">
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
             {/* Score Circle - Centralized */}
             <div className="bg-card rounded-2xl p-6 sm:p-8 border border-border shadow-xl">
               <h2 className="text-lg sm:text-xl font-semibold text-text mb-6 text-center">
@@ -777,6 +793,7 @@ export default function Results() {
               </div>
             </div>
 
+<<<<<<< HEAD
             {/* AI Agent & MCP Governance Status Block */}
             <div className="bg-[#0D1421] rounded-2xl p-6 sm:p-8 border border-[#1a2035] shadow-xl">
               <h2 className="text-lg sm:text-xl font-semibold text-text mb-6 flex items-center gap-2">
@@ -884,6 +901,71 @@ export default function Results() {
                     }`}>
                       {governanceStatus === 'SECURED' ? '100%' : `${Math.max(0, 100 - (mcpVulnerabilities.length * 25))}%`}
                     </span>
+=======
+            {/* AI Agent Governance Status */}
+            <div className="bg-gradient-to-br from-card via-background to-card rounded-2xl p-6 sm:p-8 border border-red-500/40 shadow-xl">
+              <h2 className="text-lg sm:text-xl font-semibold text-text mb-6 flex items-center gap-2">
+                <span>🛡️</span>
+                <span>AI Agent Governance Status</span>
+              </h2>
+              
+              <div className="space-y-4">
+                {/* MCP Infrastructure Subsection */}
+                <div className="bg-background/50 rounded-lg p-4 border border-border">
+                  <div className="text-text/70 text-xs font-medium mb-3 uppercase tracking-wide">
+                    MCP Infrastructure
+                  </div>
+                  
+                  {/* Compliance Fault Alert Box */}
+                  <div className="bg-gradient-to-br from-red-950/40 to-orange-950/40 rounded-lg p-4 border border-orange-500/50 shadow-lg">
+                    {/* Main Alert with Pulsing Icon */}
+                    <div className="flex items-start gap-3 mb-4">
+                      <div className="flex-shrink-0">
+                        <span className="text-2xl animate-pulse-warning">⚠️</span>
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-orange-400 font-bold text-sm sm:text-base animate-pulse-text">
+                          ⚠️ COMPLIANCE FAULT: OVER-PERMISSIONED AGENT RECOGNIZED
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Sub-metrics Breakdown */}
+                    <div className="space-y-2 mb-4 ml-2">
+                      <div className="flex items-start gap-2 text-slate-400 text-xs sm:text-sm">
+                        <span className="flex-shrink-0 mt-0.5">•</span>
+                        <span>Threat Vector: Model Context Protocol (MCP) Confused Deputy</span>
+                      </div>
+                      <div className="flex items-start gap-2 text-slate-400 text-xs sm:text-sm">
+                        <span className="flex-shrink-0 mt-0.5">•</span>
+                        <span>Instruction Boundary Condition: FAILED</span>
+                      </div>
+                      <div className="flex items-start gap-2 text-slate-400 text-xs sm:text-sm">
+                        <span className="flex-shrink-0 mt-0.5">•</span>
+                        <span>Risk Assessment Profile: High-Risk Shell Execution Layer Detected</span>
+                      </div>
+                    </div>
+                    
+                    {/* Auto-Fix Button */}
+                    <button
+                      onClick={() => {
+                        // Handle auto-fix for governance
+                        alert('BobWatch AI is analyzing MCP governance configuration...');
+                      }}
+                      className="w-full px-4 py-2.5 bg-gradient-to-r from-accent to-blue-600 text-white rounded-lg font-medium hover:from-blue-600 hover:to-accent transition-all duration-200 flex items-center justify-center gap-2 shadow-lg animate-glow-button text-sm"
+                    >
+                      <span>⚡</span>
+                      <span>Auto-Fix with BobWatch</span>
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Additional Status Info */}
+                <div className="bg-background/50 rounded-lg p-4 border border-border">
+                  <div className="flex items-center justify-between">
+                    <span className="text-text/80 text-sm font-medium">Last Audit</span>
+                    <span className="text-accent font-bold text-sm">2 minutes ago</span>
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
                   </div>
                 </div>
               </div>
@@ -986,6 +1068,7 @@ if (validate(userInput)) {
                             </div>
                           </div>
                           
+<<<<<<< HEAD
                           <p className="text-text/60 text-xs italic mb-3">
                             🛡️ BobWatch AI automatically patched this vulnerability using industry best practices
                           </p>
@@ -998,6 +1081,11 @@ if (validate(userInput)) {
                             <span>📥</span>
                             <span className="text-sm sm:text-base">Download Secure Patch</span>
                           </button>
+=======
+                          <p className="text-text/60 text-xs italic">
+                            🛡️ BobWatch AI automatically patched this vulnerability using industry best practices
+                          </p>
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
                         </div>
                       ) : (
                         /* Original Explanation */
@@ -1075,6 +1163,7 @@ if (validate(userInput)) {
                         {file.explanation}
                       </p>
                       
+<<<<<<< HEAD
                       {/* Verification and Download Section */}
                       <div className="mt-4">
                         {isVerified ? (
@@ -1105,6 +1194,22 @@ if (validate(userInput)) {
                               Mark as Verified
                             </button>
                           </div>
+=======
+                      {/* Verification Button/Badge */}
+                      <div className="flex justify-end mt-4">
+                        {isVerified ? (
+                          <div className="flex items-center gap-1 px-3 py-1 bg-green-500/20 border border-green-500 rounded-md">
+                            <span className="text-green-400 font-bold">✓</span>
+                            <span className="text-green-400 text-xs font-medium">Verified</span>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleVerifyCard(cardId)}
+                            className="px-3 py-1 text-xs bg-accent/10 border border-accent text-accent rounded-md hover:bg-accent hover:text-white transition-all duration-200"
+                          >
+                            Mark as Verified
+                          </button>
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
                         )}
                       </div>
                     </div>
@@ -1209,6 +1314,29 @@ if (validate(userInput)) {
           }
         }
         
+<<<<<<< HEAD
+=======
+        @keyframes pulse-warning {
+          0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.7;
+            transform: scale(1.1);
+          }
+        }
+        
+        @keyframes pulse-text {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.8;
+          }
+        }
+        
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
         .animate-pulse-red-glow {
           animation: pulse-red-glow 2s ease-in-out infinite;
         }
@@ -1216,6 +1344,17 @@ if (validate(userInput)) {
         .animate-glow-button {
           animation: glow-button 2s ease-in-out infinite;
         }
+<<<<<<< HEAD
+=======
+        
+        .animate-pulse-warning {
+          animation: pulse-warning 2s ease-in-out infinite;
+        }
+        
+        .animate-pulse-text {
+          animation: pulse-text 2s ease-in-out infinite;
+        }
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
       `}</style>
     </main>
   );

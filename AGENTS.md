@@ -26,6 +26,7 @@ This file should contain ONLY non-obvious, project-specific information that can
 - Information derivable from file names or extensions
 - Obvious build/test commands
 
+<<<<<<< HEAD
 ## BobWatch Wrapper Implementation Notes
 
 ### Critical Architecture Decisions
@@ -91,6 +92,24 @@ This file should contain ONLY non-obvious, project-specific information that can
   - Default limit: 3 concurrent requests to Gemini API
   - Exceeding limit causes queuing, not errors
   - Adjust `maxConcurrentAnalysis` in config for slower/faster machines
+=======
+## Template Sections
+
+### Build & Run Commands
+<!-- Only include if they differ from standard package.json scripts or have special requirements -->
+
+### Code Style & Conventions
+<!-- Only include project-specific rules not covered by linter configs -->
+
+### Custom Utilities & Patterns
+<!-- Document custom utilities discovered by reading code -->
+
+### Testing
+<!-- Only include non-standard testing requirements -->
+
+### Architecture Notes
+<!-- Document hidden coupling, non-obvious dependencies, or counterintuitive patterns -->
+>>>>>>> 4cf9263e733633d37503ac1b36a58b53350f7f09
 
 ---
 
