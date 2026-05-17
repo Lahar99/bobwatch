@@ -333,6 +333,11 @@ export default function Results() {
   const [remediatingCards, setRemediatingCards] = useState(new Set());
   const [securedCards, setSecuredCards] = useState(new Set());
   const [scoreBoost, setScoreBoost] = useState(0);
+  
+  // AI Agent & MCP Governance states
+  const [governanceStatus, setGovernanceStatus] = useState('CHECKING'); // CHECKING, FAULT, SECURED
+  const [mcpVulnerabilities, setMcpVulnerabilities] = useState([]);
+  const [remediatingGovernance, setRemediatingGovernance] = useState(false);
 
   // Handle card verification
   const handleVerifyCard = (cardId) => {
@@ -364,6 +369,26 @@ export default function Results() {
     }, 2000);
   };
 
+  // Handle AI Agent & MCP Governance Auto-Fix
+  const handleGovernanceAutoFix = (vulnerability) => {
+    setRemediatingGovernance(true);
+    
+    // Simulate 2-second AI remediation processing
+    setTimeout(() => {
+      // Download the remediated MCP manifest
+      const filename = vulnerability.filename;
+      const remediatedCode = vulnerability.remediatedCode;
+      downloadFixedFile(filename, remediatedCode);
+      
+      // Update governance status to SECURED
+      setGovernanceStatus('SECURED');
+      setRemediatingGovernance(false);
+      
+      // Boost score by 10%
+      setScoreBoost(prev => prev + 10);
+    }, 2000);
+  };
+
   // Fetch data from sessionStorage
   useEffect(() => {
     const fetchData = async () => {
@@ -386,6 +411,22 @@ export default function Results() {
           
           setData(parsedData);
           setScore(parsedData.score);
+          
+          // Detect MCP-specific vulnerabilities for governance monitoring
+          const mcpThreats = parsedData.risky?.filter(file =>
+            file.threatType?.includes('MCP BOUNDARY BREACH') ||
+            file.threatType?.includes('CONFUSED DEPUTY')
+          ) || [];
+          
+          setMcpVulnerabilities(mcpThreats);
+          
+          // Set governance status based on MCP threats
+          if (mcpThreats.length > 0) {
+            setGovernanceStatus('FAULT');
+          } else {
+            setGovernanceStatus('SECURED');
+          }
+          
           setIsLoading(false);
         } else {
           // No data available - show error
@@ -511,7 +552,7 @@ export default function Results() {
             Analysis Results
           </h1>
           
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid gap-6 lg:grid-cols-4">
             {/* Score Circle - Centralized */}
             <div className="bg-card rounded-2xl p-6 sm:p-8 border border-border shadow-xl">
               <h2 className="text-lg sm:text-xl font-semibold text-text mb-6 text-center">
@@ -731,6 +772,118 @@ export default function Results() {
                       </div>
                       <div className="text-text/60 text-xs">Reviews Done</div>
                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* AI Agent & MCP Governance Status Block */}
+            <div className="bg-[#0D1421] rounded-2xl p-6 sm:p-8 border border-[#1a2035] shadow-xl">
+              <h2 className="text-lg sm:text-xl font-semibold text-text mb-6 flex items-center gap-2">
+                <span>🤖</span>
+                <span>AI AGENT GOVERNANCE STATUS</span>
+              </h2>
+              
+              <div className="space-y-4">
+                {/* Governance Status Indicator */}
+                <div className="bg-background/30 rounded-lg p-4 border border-border">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-text/80 text-sm font-medium">MCP Infrastructure</span>
+                    {governanceStatus === 'CHECKING' && (
+                      <span className="text-blue-400 font-bold text-sm flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
+                        Scanning...
+                      </span>
+                    )}
+                    {governanceStatus === 'SECURED' && (
+                      <span className="text-green-400 font-bold text-sm flex items-center gap-2">
+                        <span>✅</span>
+                        SECURED
+                      </span>
+                    )}
+                    {governanceStatus === 'FAULT' && (
+                      <span className="text-orange-400 font-bold text-sm flex items-center gap-2 animate-pulse">
+                        <span>⚠️</span>
+                        COMPLIANCE FAULT
+                      </span>
+                    )}
+                  </div>
+                  
+                  {/* Dynamic Alert Banner for MCP Exploits */}
+                  {governanceStatus === 'FAULT' && mcpVulnerabilities.length > 0 && (
+                    <div className="mt-3 p-3 bg-orange-500/10 border border-orange-500/30 rounded-lg">
+                      <p className="text-orange-400 font-semibold text-sm mb-2">
+                        ⚠️ COMPLIANCE FAULT: OVER-PERMISSIONED AGENT RECOGNIZED
+                      </p>
+                      <p className="text-text/70 text-xs mb-3">
+                        Detected {mcpVulnerabilities.length} MCP infrastructure {mcpVulnerabilities.length === 1 ? 'vulnerability' : 'vulnerabilities'} with dangerous 'Auto-Approve' capabilities
+                      </p>
+                      
+                      {/* Vulnerability Details */}
+                      <div className="space-y-2 mb-3 max-h-32 overflow-y-auto custom-scrollbar">
+                        {mcpVulnerabilities.map((vuln, idx) => (
+                          <div key={idx} className="text-xs text-text/60 bg-background/50 p-2 rounded border border-border/50">
+                            <span className="font-mono text-orange-400">{vuln.filename}</span>
+                            <p className="mt-1">{vuln.threatType}</p>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      {/* Auto-Fix Button */}
+                      <button
+                        onClick={() => handleGovernanceAutoFix(mcpVulnerabilities[0])}
+                        disabled={remediatingGovernance}
+                        className={`w-full px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
+                          remediatingGovernance
+                            ? 'bg-accent/50 text-white/50 cursor-not-allowed'
+                            : 'bg-accent text-white hover:bg-accent/90 hover:shadow-lg'
+                        }`}
+                      >
+                        {remediatingGovernance ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            Securing Agent...
+                          </span>
+                        ) : (
+                          '⚡ Auto-Fix with BobWatch'
+                        )}
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Secured State */}
+                  {governanceStatus === 'SECURED' && (
+                    <div className="mt-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                      <p className="text-green-400 font-semibold text-sm flex items-center gap-2">
+                        <span>✅</span>
+                        All AI agents operating within approved boundaries
+                      </p>
+                      <p className="text-text/60 text-xs mt-1">
+                        No over-permissioned configurations detected
+                      </p>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Governance Metrics */}
+                <div className="bg-background/30 rounded-lg p-4 border border-border">
+                  <div className="flex items-center justify-between">
+                    <span className="text-text/80 text-sm font-medium">Shadow AI Detection</span>
+                    <span className="text-accent font-bold text-sm">
+                      {mcpVulnerabilities.length === 0 ? 'Clean' : `${mcpVulnerabilities.length} Found`}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Compliance Score */}
+                <div className="bg-background/30 rounded-lg p-4 border border-border">
+                  <div className="flex items-center justify-between">
+                    <span className="text-text/80 text-sm font-medium">Compliance Score</span>
+                    <span className={`font-bold text-sm ${
+                      governanceStatus === 'SECURED' ? 'text-green-400' : 'text-orange-400'
+                    }`}>
+                      {governanceStatus === 'SECURED' ? '100%' : `${Math.max(0, 100 - (mcpVulnerabilities.length * 25))}%`}
+                    </span>
                   </div>
                 </div>
               </div>
