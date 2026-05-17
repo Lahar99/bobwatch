@@ -171,7 +171,7 @@ score += (collateral.length * collateralWeight);
 score = Math.max(0, Math.min(100, score)); // Clamp between 0-100
 ```
 
-#### Response Format (matches `/api/demo`)
+#### Response Format
 ```json
 {
   "status": "success",
@@ -189,8 +189,7 @@ score = Math.max(0, Math.min(100, score)); // Clamp between 0-100
 ### 6. Frontend Integration
 
 #### Update `app/page.js`
-**Changes:**
-- Replace mock navigation with actual API call
+**Implementation:**
 - POST to `/api/analyze` with `{ githubUrl, userIntent }`
 - Store response in sessionStorage
 - Navigate to `/results` after successful response
@@ -220,9 +219,9 @@ const handleAnalyze = async () => {
 ```
 
 #### Update `app/results/page.js`
-**Changes:**
-- Check sessionStorage first before calling `/api/demo`
-- Fallback to demo API if no stored data
+**Implementation:**
+- Read analysis results from sessionStorage
+- Display the AI-powered analysis
 
 ```javascript
 useEffect(() => {
@@ -230,9 +229,6 @@ useEffect(() => {
   if (storedData) {
     setData(JSON.parse(storedData));
     sessionStorage.removeItem('analysisResult');
-  } else {
-    // Fallback to demo API
-    fetchData();
   }
 }, []);
 ```
@@ -335,7 +331,7 @@ Users will:
 5. Get a Trust Reality Delta (TRD) score
 6. View detailed explanations for each file
 
-**The dashboard will work exactly as it does now with `/api/demo`, but with real AI analysis!**
+**The dashboard displays real AI analysis results!**
 
 ---
 
@@ -345,4 +341,4 @@ Users will:
 - JSON mode ensures structured responses
 - GitHub API is public and doesn't require authentication for public repos
 - Session storage prevents data loss on page refresh
-- Fallback to demo API ensures the app always works
+- Real-time AI analysis provides accurate security insights
