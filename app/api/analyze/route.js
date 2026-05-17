@@ -134,7 +134,14 @@ function generatePresentationData(userIntent, prData) {
     }
   );
   
+  // Calculate score based on file counts
+  let score = 100;
+  score -= (riskyFiles.length * 20); // Each risky file reduces score by 20
+  score -= (collateralFiles.length * 5); // Each collateral file reduces score by 5
+  score = Math.max(0, Math.min(100, score)); // Clamp between 0-100
+  
   return {
+    score: score,
     risky: riskyFiles,
     collateral: collateralFiles,
     intended: primaryFiles
@@ -159,10 +166,12 @@ Analyze this code diff against the developer's stated intent. Classify ALL code 
 3. **RISKY** - Changes that introduce security vulnerabilities, prompt injections, exposed secrets, authentication bypasses, or dangerous deviations from intent
 
 CRITICAL REQUIREMENTS:
+- MUST provide a "score" field as an integer between 1 and 100 (REQUIRED, NEVER null or 0 unless truly no alignment)
+- Score calculation: Start at 100, subtract 20 points per RISKY file, subtract 5 points per COLLATERAL file
 - For RISKY items: Identify the specific threat type (e.g., "PROMPT INJECTION", "SQL INJECTION", "AUTH BYPASS", "EXPOSED SECRETS", "XSS VULNERABILITY", "RESOURCE EXHAUSTION")
 - For RISKY items: Generate clean, secure "remediatedCode" that fixes the vulnerability while maintaining functionality
-- Provide an overall "score" out of 100 based on intent alignment (100 = perfect match, 0 = complete drift)
 - Be thorough but concise in explanations
+- ALL arrays (risky, collateral, intended) must be present, use empty arrays [] if no items
 
 OUTPUT FORMAT (STRICT JSON ONLY - NO MARKDOWN, NO EXPLANATIONS):
 {
@@ -194,17 +203,33 @@ RESPOND WITH ONLY THE JSON OBJECT. NO ADDITIONAL TEXT.`.trim();
 
 // Helper function to calculate TRD score (with AI override support)
 function calculateTRDScore(aiResponse) {
-  // If AI provided a score, use it (with validation)
-  if (aiResponse.score !== undefined && typeof aiResponse.score === 'number') {
-    return Math.max(0, Math.min(100, Math.round(aiResponse.score)));
+  // Ensure arrays exist with defaults
+  const risky = Array.isArray(aiResponse.risky) ? aiResponse.risky : [];
+  const collateral = Array.isArray(aiResponse.collateral) ? aiResponse.collateral : [];
+  const intended = Array.isArray(aiResponse.intended) ? aiResponse.intended : [];
+  
+  // If AI provided a valid score, use it (with validation)
+  if (aiResponse.score !== undefined &&
+      aiResponse.score !== null &&
+      typeof aiResponse.score === 'number' &&
+      aiResponse.score > 0) {
+    return Math.max(1, Math.min(100, Math.round(aiResponse.score)));
   }
   
-  // Fallback calculation if AI didn't provide score
-  const { risky, collateral } = aiResponse;
+  // Fallback calculation if AI didn't provide valid score
   let score = 100;
-  score -= (risky.length * 20);
-  score -= (collateral.length * 5);
-  return Math.max(0, Math.min(100, score));
+  score -= (risky.length * 20); // Each risky file: -20 points
+  score -= (collateral.length * 5); // Each collateral file: -5 points
+  
+  // Ensure score is never 0 unless there are critical issues
+  score = Math.max(1, Math.min(100, score));
+  
+  // If we have intended files but score is still low, boost it slightly
+  if (intended.length > 0 && score < 30) {
+    score = Math.min(score + (intended.length * 5), 50);
+  }
+  
+  return Math.round(score);
 }
 
 export async function POST(request) {
@@ -352,17 +377,33 @@ export async function POST(request) {
       }
     }
 
+    // Ensure arrays exist with proper defaults
+    const risky = Array.isArray(aiResponse.risky) ? aiResponse.risky : [];
+    const collateral = Array.isArray(aiResponse.collateral) ? aiResponse.collateral : [];
+    const intended = Array.isArray(aiResponse.intended) ? aiResponse.intended : [];
+    
     // Calculate TRD score (preserving exact scoring mathematics)
-    const score = calculateTRDScore(aiResponse);
+    const score = calculateTRDScore({
+      score: aiResponse.score,
+      risky,
+      collateral,
+      intended
+    });
+    
+    // Validate score is never 0 or null
+    const validatedScore = (score && score > 0) ? score : 50; // Default to 50 if invalid
+
+    console.log(`✅ Final validated score: ${validatedScore}`);
+    console.log(`📊 Files breakdown - Risky: ${risky.length}, Collateral: ${collateral.length}, Intended: ${intended.length}`);
 
     // Return response preserving exact frontend state configurations and sessionStorage keys
     return NextResponse.json({
       status: 'success',
       data: {
-        score,
-        risky: aiResponse.risky,
-        collateral: aiResponse.collateral,
-        intended: aiResponse.intended
+        score: validatedScore,
+        risky,
+        collateral,
+        intended
       }
     });
 
