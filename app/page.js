@@ -10,23 +10,29 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleAnalyze = async () => {
-    if (!repoUrl || !instructions) {
+    // Detect if input contains session text (multi-line or very long)
+    const isSessionText = repoUrl.includes('\n') || repoUrl.length > 500;
+    
+    // Validate: either session text OR (URL + instructions)
+    if (!repoUrl || (!isSessionText && !instructions)) {
       return;
     }
 
     setIsLoading(true);
 
     try {
+      // Build payload based on input type
+      const payload = isSessionText
+        ? { rawSessionText: repoUrl }
+        : { githubUrl: repoUrl, userIntent: instructions };
+
       // Call the analyze API
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          githubUrl: repoUrl,
-          userIntent: instructions
-        })
+        body: JSON.stringify(payload)
       });
 
       const result = await response.json();
@@ -120,25 +126,25 @@ export default function Home() {
           {/* Input Block */}
           <div className="max-w-2xl mx-auto">
             <div className="bg-card rounded-2xl p-6 sm:p-8 border border-border shadow-xl">
-              {/* GitHub Repo URL Input */}
+              {/* GitHub Repo URL or Session Text Input */}
               <div className="mb-6">
                 <label htmlFor="repo-url" className="block text-text text-sm font-medium mb-3 text-left">
-                  GitHub Repo URL
+                  GitHub PR URL or Bob Session Text
                 </label>
-                <input
+                <textarea
                   id="repo-url"
-                  type="text"
                   value={repoUrl}
                   onChange={(e) => setRepoUrl(e.target.value)}
-                  placeholder="https://github.com/username/repository"
-                  className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text placeholder-text/40 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
+                  placeholder="Paste GitHub PR URL or raw Bob IDE session export..."
+                  rows={repoUrl.includes('\n') ? 8 : 2}
+                  className="w-full px-4 py-3 bg-background border border-border rounded-lg text-text placeholder-text/40 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all resize-y font-mono text-sm"
                 />
               </div>
 
-              {/* Intent Input */}
+              {/* Intent Input - Optional for session text */}
               <div className="mb-8">
                 <label htmlFor="instructions" className="block text-text text-sm font-medium mb-3 text-left">
-                  What did you tell Bob to do?
+                  What did you tell Bob to do? {(repoUrl.includes('\n') || repoUrl.length > 500) && <span className="text-text/50 text-xs">(optional for session imports)</span>}
                 </label>
                 <input
                   id="instructions"
